@@ -70,3 +70,23 @@ export function previousYmKst(now: Date): string {
 
   return addMonths(`${year}-${month}`, -1);
 }
+
+
+/**
+ * YYYY-MM에 해당하는 달의 마지막 날짜를 반환한다.
+ * 예: 2026-02 -> 2026-02-28
+ */
+export function lastDayOf(ym: string): string {
+  if (!/^\d{4}-(0[1-9]|1[0-2])$/.test(ym)) {
+    throw new Error("기준월은 YYYY-MM 형식이어야 합니다.");
+  }
+
+  const [year, month] = ym.split("-").map(Number);
+
+  const lastDay = new Date(
+    Date.UTC(year, month, 0)
+  ).getUTCDate();
+
+  return `${ym}-${String(lastDay).padStart(2, "0")}`;
+}
+

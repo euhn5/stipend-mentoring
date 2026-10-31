@@ -5,6 +5,7 @@ import {
   termOf,
   termMonths,
   previousYmKst,
+  lastDayOf,
 } from "@/domain/month";
 
 describe("addMonths", () => {
@@ -65,5 +66,24 @@ describe("previousYmKst", () => {
   it("UTC와 한국 날짜가 다를 때도 한국 시간을 사용한다", () => {
     const date = new Date("2026-08-31T16:00:00Z");
     expect(previousYmKst(date)).toBe("2026-08");
+  });
+});
+
+// 새로 추가한 테스트
+describe("lastDayOf", () => {
+  it("2026년 2월은 28일까지 있다", () => {
+    expect(lastDayOf("2026-02")).toBe("2026-02-28");
+  });
+
+  it("윤년인 2028년 2월은 29일까지 있다", () => {
+    expect(lastDayOf("2028-02")).toBe("2028-02-29");
+  });
+
+  it("2026년 4월은 30일까지 있다", () => {
+    expect(lastDayOf("2026-04")).toBe("2026-04-30");
+  });
+
+  it("2026년 12월은 31일까지 있다", () => {
+    expect(lastDayOf("2026-12")).toBe("2026-12-31");
   });
 });
