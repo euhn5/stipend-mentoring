@@ -1,21 +1,19 @@
-import { addMonths } from "@/domain/month";
+
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { and, desc, eq } from "drizzle-orm";
 
+import { db } from "@/db/client";
+import { auditLog } from "@/db/schema";
+import { addMonths } from "@/domain/month";
 import { getRoster } from "@/queries/roster";
-import {
-  FUND_CODES,
-  getPayments,
-} from "@/queries/payments";
+import { FUND_CODES, getPayments } from "@/queries/payments";
 
-type StudentTab = "info" | "requirements" | "payments";
+type StudentTab = "info" | "requirements" | "payments" | "history";
 
 type Props = {
   params: Promise<{ studentNo: string }>;
-  searchParams: Promise<{
-    ym?: string;
-    tab?: string;
-  }>;
+  searchParams: Promise<{ ym?: string; tab?: string }>;
 };
 
 const cardStyle = {
@@ -32,6 +30,9 @@ const rowStyle = {
   borderBottom: "1px solid #334155",
 };
 
+const money = (value: number) =>
+  `${value.toLocaleString("ko-KR")}원`;
+
 function InfoRow({
   label,
   value,
@@ -41,9 +42,7 @@ function InfoRow({
 }) {
   return (
     <div style={rowStyle}>
-      <span style={{ color: "#94a3b8" }}>
-        {label}
-      </span>
+      <span style={{ color: "#94a3b8" }}>{label}</span>
       <strong>{value ?? "-"}</strong>
     </div>
   );
@@ -62,31 +61,37 @@ function RequirementRow({
     <div style={rowStyle}>
       <div>
         <strong>{label}</strong>
-        <p
-          style={{
-            color: "#94a3b8",
-            fontSize: 13,
-            marginTop: 4,
-          }}
-        >
+        <p style={{ color: "#94a3b8", fontSize: 13, marginTop: 4 }}>
           {description}
         </p>
       </div>
-
-      <strong
-        style={{
-          color:
-            value === "O" ? "#4ade80" : "#f87171",
-        }}
-      >
+      <strong style={{ color: value === "O" ? "#4ade80" : "#f87171" }}>
         {value}
       </strong>
     </div>
   );
 }
 
-const money = (amount: number) =>
-  `${amount.toLocaleString("ko-KR")}원`;
+// 감사로그의 JSON을 안전하게 변환
+function readAuditJson(value: string | null): Record<string, unknown> {
+  if (!value) return {};
+
+  try {
+    const parsed: unknown = JSON.parse(value);
+
+    if (
+      parsed !== null &&
+      typeof parsed === "object" &&
+      !Array.isArray(parsed)
+    ) {
+      return parsed as Record<string, unknown>;
+    }
+  } catch {
+    return {};
+  }
+
+  return {};
+}
 
 export default async function StudentPage({
   params,
@@ -98,77 +103,67 @@ export default async function StudentPage({
   const ym = query.ym || "2026-03";
 
   const tab: StudentTab =
-    query.tab === "payments"
-      ? "payments"
-      : query.tab === "requirements"
-        ? "requirements"
-        : "info";
+    query.tab === "history"
+      ? "history"
+      : query.tab === "payments"
+        ? "payments"
+        : query.tab === "requirements"
+          ? "requirements"
+          : "info";
 
-  // 해당 월 학생 조회
+  // 학생 기본 정보 조회
   const students = await getRoster({ ym });
-
-  const student = students.find(
-    (row) => row.studentNo === studentNo
-  );
+  const student = students.find((row) => row.studentNo === studentNo);
 
   if (!student) {
     notFound();
   }
 
-  // 지급 탭을 열었을 때만 지급내역 조회
-  
-  // 기준월부터 6개월 목록 생성
-  // 예: 2026-03 -> 03, 04, 05, 06, 07, 08
+  // 기준월부터 6개월 생성
   const paymentMonths = Array.from(
     { length: 6 },
     (_, index) => addMonths(ym, index)
   );
 
-  // 지급 탭일 때만 6개월 지급내역 조회
+  // 지급 탭에서만 월별 지급내역 조회
   const paymentHistory =
     tab === "payments"
       ? await Promise.all(
           paymentMonths.map(async (month) => {
-            const rows = await getPayments({
-              ym: month,
-            });
-
-            const row = rows.find(
-              (item) => item.studentNo === studentNo
-            );
+            const rows = await getPayments({ ym: month });
 
             return {
               ym: month,
-              payment: row ?? null,
+              payment:
+                rows.find((row) => row.studentNo === studentNo) ?? null,
             };
           })
         )
       : [];
 
-  // 기존 단일 월 상세 화면에서 사용할 자료
   const payment = paymentHistory[0]?.payment ?? null;
-  
-  // 6개월 지급내역 합계
+
+  // 6개월 지급액 합계
   const sixMonthTotal = paymentHistory.reduce(
-    (sum, item) =>
-      sum + (item.payment?.totalPaid ?? 0),
+    (sum, item) => sum + (item.payment?.totalPaid ?? 0),
     0
   );
 
-  // 기준금액이 적용되는 월의 부족금액 합계
   const sixMonthShortage = paymentHistory.reduce(
-    (sum, item) =>
-      sum + (item.payment?.shortageAmount ?? 0),
+    (sum, item) => sum + (item.payment?.shortageAmount ?? 0),
     0
   );
 
-  // 재원별 6개월 합계
+  const sixMonthStandardTotal = paymentHistory.reduce(
+    (sum, item) => sum + (item.payment?.standardAmount ?? 0),
+    0
+  );
+
   const sixMonthFundTotals = Object.fromEntries(
     FUND_CODES.map((code) => [
       code,
       paymentHistory.reduce(
-        (sum, item) =>
-          sum + (item.payment?.fundAmounts[code] ?? 0),
+        (sum, item) => sum + (item.payment?.fundAmounts[code] ?? 0),
         0
       ),
     ])
@@ -179,14 +174,22 @@ export default async function StudentPage({
     sixMonthFundTotals.F12 +
     sixMonthFundTotals.F13;
 
-  const sixMonthStandardTotal = paymentHistory.reduce(
-    (sum, item) =>
-      sum + (item.payment?.standardAmount ?? 0),
-    0
-  );
+  // 변경 이력 탭에서만 감사로그 조회
+  const history =
+    tab === "history"
+      ? await db
+          .select()
+          .from(auditLog)
+          .where(
+            and(
+              eq(auditLog.tableName, "student_monthly"),
+              eq(auditLog.rowKey, `${ym}|${studentNo}`)
+            )
+          )
+          .orderBy(desc(auditLog.logId))
+      : [];
 
-
-
+  // 탭 링크
   function TabLink({
     label,
     value,
@@ -217,14 +220,7 @@ export default async function StudentPage({
   }
 
   return (
-    <main
-      style={{
-        padding: 32,
-        maxWidth: 1100,
-        margin: "0 auto",
-      }}
-    >
-      {/* 명부로 돌아가기 */}
+    <main style={{ padding: 32, maxWidth: 1100, margin: "0 auto" }}>
       <Link
         href={`/roster?ym=${encodeURIComponent(ym)}`}
         style={{ color: "#93c5fd" }}
@@ -232,65 +228,26 @@ export default async function StudentPage({
         ← 학생연구자 명부로 돌아가기
       </Link>
 
-      <h1
-        style={{
-          fontSize: 28,
-          fontWeight: 700,
-          marginTop: 24,
-        }}
-      >
+      <h1 style={{ fontSize: 28, fontWeight: 700, marginTop: 24 }}>
         {student.name} 학생 상세
       </h1>
 
-      <p
-        style={{
-          color: "#94a3b8",
-          marginTop: 8,
-        }}
-      >
+      <p style={{ color: "#94a3b8", marginTop: 8 }}>
         학번 {student.studentNo} · 기준월 {ym}
       </p>
 
       {/* 학생 기본 정보 */}
-      <section
-        style={{
-          ...cardStyle,
-          marginTop: 24,
-        }}
-      >
-        <h2
-          style={{
-            fontSize: 20,
-            fontWeight: 600,
-          }}
-        >
+      <section style={{ ...cardStyle, marginTop: 24 }}>
+        <h2 style={{ fontSize: 20, fontWeight: 600 }}>
           학생 기본 정보
         </h2>
 
-        <InfoRow
-          label="학번"
-          value={student.studentNo}
-        />
-        <InfoRow
-          label="이름"
-          value={student.name}
-        />
-        <InfoRow
-          label="학위"
-          value={student.degree}
-        />
-        <InfoRow
-          label="학과"
-          value={student.dept}
-        />
-        <InfoRow
-          label="지도교수"
-          value={student.professorName}
-        />
-        <InfoRow
-          label="종합 지원자격"
-          value={student.overall}
-        />
+        <InfoRow label="학번" value={student.studentNo} />
+        <InfoRow label="이름" value={student.name} />
+        <InfoRow label="학위" value={student.degree} />
+        <InfoRow label="학과" value={student.dept} />
+        <InfoRow label="지도교수" value={student.professorName} />
+        <InfoRow label="종합 지원자격" value={student.overall} />
       </section>
 
       {/* 탭 메뉴 */}
@@ -304,79 +261,31 @@ export default async function StudentPage({
         }}
       >
         <TabLink label="학적" value="info" />
-
-        <TabLink
-          label="지원요건"
-          value="requirements"
-        />
-
-        <TabLink
-          label="지급"
-          value="payments"
-        />
-
-        <span
-          style={{
-            padding: "12px 20px",
-            color: "#64748b",
-            whiteSpace: "nowrap",
-          }}
-        >
-          변경 이력 (Step 11)
-        </span>
+        <TabLink label="지원요건" value="requirements" />
+        <TabLink label="지급" value="payments" />
+        <TabLink label="변경 이력" value="history" />
       </nav>
 
       {/* 학적 탭 */}
       {tab === "info" && (
-        <section
-          style={{
-            ...cardStyle,
-            marginTop: 24,
-          }}
-        >
+        <section style={{ ...cardStyle, marginTop: 24 }}>
           <h2 style={{ fontSize: 20, fontWeight: 600 }}>
             학적 정보
           </h2>
 
-          <InfoRow
-            label="연구자번호"
-            value={student.researcherNo}
-          />
-          <InfoRow
-            label="출신대학교"
-            value={student.originUniv}
-          />
-          <InfoRow
-            label="학적상태"
-            value={student.acadStatus}
-          />
-          <InfoRow
-            label="현재 학기"
-            value={student.semesterNo}
-          />
-          <InfoRow
-            label="전일제 여부"
-            value={student.fulltimeYn}
-          />
-          <InfoRow
-            label="연구활동 유형"
-            value={student.activityType}
-          />
-          <InfoRow
-            label="누적 지원개월"
-            value={student.cumSupportMonths}
-          />
+          <InfoRow label="연구자번호" value={student.researcherNo} />
+          <InfoRow label="출신대학교" value={student.originUniv} />
+          <InfoRow label="학적상태" value={student.acadStatus} />
+          <InfoRow label="현재 학기" value={student.semesterNo} />
+          <InfoRow label="전일제 여부" value={student.fulltimeYn} />
+          <InfoRow label="연구활동 유형" value={student.activityType} />
+          <InfoRow label="누적 지원개월" value={student.cumSupportMonths} />
         </section>
       )}
 
       {/* 지원요건 탭 */}
       {tab === "requirements" && (
-        <section
-          style={{
-            ...cardStyle,
-            marginTop: 24,
-          }}
-        >
+        <section style={{ ...cardStyle, marginTop: 24 }}>
           <h2 style={{ fontSize: 20, fontWeight: 600 }}>
             지원요건 판정
           </h2>
@@ -386,16 +295,19 @@ export default async function StudentPage({
             value={student.r1Status}
             description="지원 가능한 학적상태인지 확인"
           />
+
           <RequirementRow
             label="R2 · 전일제"
             value={student.r2Fulltime}
             description="전일제 참여 여부 확인"
           />
+
           <RequirementRow
             label="R3 · 연구활동"
             value={student.r3Activity}
             description="인정되는 연구활동 유형인지 확인"
           />
+
           <RequirementRow
             label="R4 · 지원기간"
             value={student.r4Period}
@@ -410,14 +322,8 @@ export default async function StudentPage({
               background: "#0f172a",
             }}
           >
-            <InfoRow
-              label="종합 지원자격"
-              value={student.overall}
-            />
-            <InfoRow
-              label="최대 지원기한"
-              value={student.maxSupportYm}
-            />
+            <InfoRow label="종합 지원자격" value={student.overall} />
+            <InfoRow label="최대 지원기한" value={student.maxSupportYm} />
             <InfoRow
               label="기준 지급액"
               value={
@@ -432,12 +338,7 @@ export default async function StudentPage({
 
       {/* 지급 탭 */}
       {tab === "payments" && (
-        <section
-          style={{
-            ...cardStyle,
-            marginTop: 24,
-          }}
-        >
+        <section style={{ ...cardStyle, marginTop: 24 }}>
           <h2 style={{ fontSize: 20, fontWeight: 600 }}>
             {ym} 지급내역
           </h2>
@@ -495,11 +396,10 @@ export default async function StudentPage({
 
               <InfoRow
                 label="통합관리 소계 (F11+F12+F13)"
-                value={money(
-                  payment.integratedSubtotal
-                )}
+                value={money(payment.integratedSubtotal)}
               />
 
+              {/* 정합성 검사 */}
               <div
                 style={{
                   marginTop: 24,
@@ -508,41 +408,26 @@ export default async function StudentPage({
                   borderRadius: 8,
                 }}
               >
-                <h3
-                  style={{
-                    fontSize: 18,
-                    fontWeight: 600,
-                  }}
-                >
+                <h3 style={{ fontSize: 18, fontWeight: 600 }}>
                   정합성 검사
                 </h3>
 
                 <p
                   style={{
                     marginTop: 12,
-                    color: payment.chk04.ok
-                      ? "#4ade80"
-                      : "#f87171",
+                    color: payment.chk04.ok ? "#4ade80" : "#f87171",
                   }}
                 >
-                  CHK-04:{" "}
-                  {payment.chk04.ok
-                    ? "일치"
-                    : "불일치"}
+                  CHK-04: {payment.chk04.ok ? "일치" : "불일치"}
                 </p>
 
                 <p
                   style={{
                     marginTop: 8,
-                    color: payment.chk05.ok
-                      ? "#4ade80"
-                      : "#f87171",
+                    color: payment.chk05.ok ? "#4ade80" : "#f87171",
                   }}
                 >
-                  CHK-05:{" "}
-                  {payment.chk05.ok
-                    ? "일치"
-                    : "불일치"}
+                  CHK-05: {payment.chk05.ok ? "일치" : "불일치"}
                 </p>
 
                 {!payment.chk05.ok && (
@@ -556,20 +441,15 @@ export default async function StudentPage({
                         key={diff.field}
                         style={{
                           padding: "12px 0",
-                          borderBottom:
-                            "1px solid #334155",
+                          borderBottom: "1px solid #334155",
                         }}
                       >
-                        <strong>
-                          재원 {diff.field}
-                        </strong>
+                        <strong>재원 {diff.field}</strong>
                         <p>
-                          본 시스템:{" "}
-                          {money(Number(diff.ours))}
+                          본 시스템: {money(Number(diff.ours))}
                         </p>
                         <p>
-                          원천 데이터:{" "}
-                          {money(Number(diff.source))}
+                          원천 데이터: {money(Number(diff.source))}
                         </p>
                       </div>
                     ))}
@@ -590,8 +470,8 @@ export default async function StudentPage({
               >
                 전체 지급내역 화면에서 확인
               </Link>
-              
-              {/* 6개월 월별 지급내역 */}
+
+              {/* 6개월 지급내역 */}
               <div style={{ marginTop: 36 }}>
                 <h3
                   style={{
@@ -632,11 +512,7 @@ export default async function StudentPage({
                     }}
                   >
                     <thead>
-                      <tr
-                        style={{
-                          background: "#0f172a",
-                        }}
-                      >
+                      <tr style={{ background: "#0f172a" }}>
                         {[
                           "기준월",
                           ...FUND_CODES,
@@ -651,8 +527,7 @@ export default async function StudentPage({
                             style={{
                               padding: 12,
                               whiteSpace: "nowrap",
-                              borderBottom:
-                                "1px solid #475569",
+                              borderBottom: "1px solid #475569",
                             }}
                           >
                             {heading}
@@ -662,98 +537,84 @@ export default async function StudentPage({
                     </thead>
 
                     <tbody>
-                      {paymentHistory.map(
-                        ({ ym: month, payment: row }) => (
-                          <tr key={month}>
-                            <td
-                              style={{
-                                padding: 12,
-                                whiteSpace: "nowrap",
-                                borderBottom:
-                                  "1px solid #334155",
-                              }}
-                            >
-                              {month}
-                            </td>
+                      {paymentHistory.map(({ ym: month, payment: row }) => (
+                        <tr key={month}>
+                          <td
+                            style={{
+                              padding: 12,
+                              whiteSpace: "nowrap",
+                              borderBottom: "1px solid #334155",
+                            }}
+                          >
+                            {month}
+                          </td>
 
-                            {row ? (
-                              <>
-                                {FUND_CODES.map((code) => (
-                                  <td
-                                    key={code}
-                                    style={{
-                                      padding: 12,
-                                      borderBottom:
-                                        "1px solid #334155",
-                                    }}
-                                  >
-                                    {money(
-                                      row.fundAmounts[code]
-                                    )}
-                                  </td>
-                                ))}
-
-                                <td style={{ padding: 12 }}>
-                                  {money(
-                                    row.integratedSubtotal
-                                  )}
+                          {row ? (
+                            <>
+                              {FUND_CODES.map((code) => (
+                                <td key={code} style={{ padding: 12 }}>
+                                  {money(row.fundAmounts[code])}
                                 </td>
+                              ))}
 
-                                <td
-                                  style={{
-                                    padding: 12,
-                                    fontWeight: 700,
-                                  }}
-                                >
-                                  {money(row.totalPaid)}
-                                </td>
+                              <td style={{ padding: 12 }}>
+                                {money(row.integratedSubtotal)}
+                              </td>
 
-                                <td style={{ padding: 12 }}>
-                                  {row.standardAmount === null
-                                    ? "-"
-                                    : money(row.standardAmount)}
-                                </td>
-
-                                <td
-                                  style={{
-                                    padding: 12,
-                                    color:
-                                      row.meets === "O"
-                                        ? "#4ade80"
-                                        : row.meets === "X"
-                                          ? "#f87171"
-                                          : "#94a3b8",
-                                    fontWeight: 700,
-                                  }}
-                                >
-                                  {row.meets ?? "-"}
-                                </td>
-
-                                <td style={{ padding: 12 }}>
-                                  {row.shortageAmount === null
-                                    ? "-"
-                                    : money(row.shortageAmount)}
-                                </td>
-                              </>
-                            ) : (
                               <td
-                                colSpan={12}
                                 style={{
                                   padding: 12,
-                                  color: "#94a3b8",
-                                  textAlign: "center",
+                                  fontWeight: 700,
                                 }}
                               >
-                                해당 월 학적 데이터 없음
-                                (연동 여부 확인)
+                                {money(row.totalPaid)}
                               </td>
-                            )}
-                          </tr>
-                        )
-                      )}
-                    
+
+                              <td style={{ padding: 12 }}>
+                                {row.standardAmount === null
+                                  ? "-"
+                                  : money(row.standardAmount)}
+                              </td>
+
+                              <td
+                                style={{
+                                  padding: 12,
+                                  color:
+                                    row.meets === "O"
+                                      ? "#4ade80"
+                                      : row.meets === "X"
+                                        ? "#f87171"
+                                        : "#94a3b8",
+                                  fontWeight: 700,
+                                }}
+                              >
+                                {row.meets ?? "-"}
+                              </td>
+
+                              <td style={{ padding: 12 }}>
+                                {row.shortageAmount === null
+                                  ? "-"
+                                  : money(row.shortageAmount)}
+                              </td>
+                            </>
+                          ) : (
+                            <td
+                              colSpan={12}
+                              style={{
+                                padding: 12,
+                                color: "#94a3b8",
+                                textAlign: "center",
+                              }}
+                            >
+                              해당 월 학적 데이터 없음
+                              (연동 여부 확인)
+                            </td>
+                          )}
+                        </tr>
+                      ))}
                     </tbody>
 
+                    {/* 6개월 합계 */}
                     <tfoot>
                       <tr
                         style={{
@@ -767,10 +628,7 @@ export default async function StudentPage({
                         </td>
 
                         {FUND_CODES.map((code) => (
-                          <td
-                            key={code}
-                            style={{ padding: 12, whiteSpace: "nowrap" }}
-                          >
+                          <td key={code} style={{ padding: 12 }}>
                             {money(sixMonthFundTotals[code])}
                           </td>
                         ))}
@@ -787,21 +645,204 @@ export default async function StudentPage({
                           {money(sixMonthStandardTotal)}
                         </td>
 
-                        <td style={{ padding: 12 }}>
-                          -
-                        </td>
+                        <td style={{ padding: 12 }}>-</td>
 
-                        <td style={{ padding: 12, color: "#f87171" }}>
+                        <td
+                          style={{
+                            padding: 12,
+                            color: "#f87171",
+                          }}
+                        >
                           {money(sixMonthShortage)}
                         </td>
                       </tr>
                     </tfoot>
                   </table>
-
                 </div>
               </div>
-
             </>
+          )}
+        </section>
+      )}
+
+      {/* 변경 이력 탭 */}
+      {tab === "history" && (
+        <section style={{ ...cardStyle, marginTop: 24 }}>
+          <h2 style={{ fontSize: 20, fontWeight: 600 }}>
+            학적 변경 이력
+          </h2>
+
+          <p
+            style={{
+              marginTop: 8,
+              marginBottom: 20,
+              color: "#94a3b8",
+            }}
+          >
+            {ym} · {student.name} · 총 {history.length}건
+          </p>
+
+          {history.map((log) => {
+            const before = readAuditJson(log.beforeJson);
+            const after = readAuditJson(log.afterJson);
+
+            const fields = [
+              ...new Set([
+                ...Object.keys(before),
+                ...Object.keys(after),
+              ]),
+            ];
+
+            const changedFields = fields.filter(
+                (field) =>
+                    field !== "syncedAt" &&
+                    JSON.stringify(before[field]) !==
+                    JSON.stringify(after[field])
+            );
+
+
+            return (
+              <details
+                key={log.logId}
+                style={{
+                  border: "1px solid #475569",
+                  borderRadius: 8,
+                  padding: 16,
+                  marginBottom: 12,
+                  background: "#0f172a",
+                }}
+              >
+                <summary
+                  style={{
+                    cursor: "pointer",
+                    fontWeight: 700,
+                  }}
+                >
+                  <span
+                    style={{
+                      color:
+                        log.action === "U"
+                          ? "#facc15"
+                          : log.action === "C"
+                            ? "#4ade80"
+                            : "#f87171",
+                    }}
+                  >
+                    {log.action === "U"
+                      ? "수정"
+                      : log.action === "C"
+                        ? "생성"
+                        : "삭제"}
+                  </span>
+
+                  {" · "}
+                  로그 #{log.logId}
+                  {" · "}
+                  {new Date(log.actedAt).toLocaleString(
+                    "ko-KR",
+                    { timeZone: "Asia/Seoul" }
+                  )}
+                </summary>
+
+                <p
+                  style={{
+                    marginTop: 12,
+                    color: "#94a3b8",
+                    fontSize: 13,
+                  }}
+                >
+                  작업자: {log.actor}
+                </p>
+
+                <div
+                  style={{
+                    overflowX: "auto",
+                    marginTop: 12,
+                  }}
+                >
+                  <table
+                    style={{
+                      width: "100%",
+                      borderCollapse: "collapse",
+                      textAlign: "left",
+                    }}
+                  >
+                    <thead>
+                      <tr>
+                        {["필드", "변경 전", "변경 후"].map((heading) => (
+                          <th
+                            key={heading}
+                            style={{
+                              padding: 10,
+                              borderBottom: "1px solid #475569",
+                            }}
+                          >
+                            {heading}
+                          </th>
+                        ))}
+                      </tr>
+                    </thead>
+
+                    <tbody>
+                      {changedFields.map((field) => (
+                        <tr key={field}>
+                          <td
+                            style={{
+                              padding: 10,
+                              color: "#facc15",
+                            }}
+                          >
+                            {field}
+                          </td>
+
+                          <td
+                            style={{
+                              padding: 10,
+                              color: "#fca5a5",
+                            }}
+                          >
+                            {before[field] == null
+                              ? "-"
+                              : String(before[field])}
+                          </td>
+
+                          <td
+                            style={{
+                              padding: 10,
+                              color: "#86efac",
+                            }}
+                          >
+                            {after[field] == null
+                              ? "-"
+                              : String(after[field])}
+                          </td>
+                        </tr>
+                      ))}
+
+                      {changedFields.length === 0 && (
+                        <tr>
+                          <td
+                            colSpan={3}
+                            style={{
+                              padding: 12,
+                              color: "#94a3b8",
+                            }}
+                          >
+                            변경된 필드가 없습니다.
+                          </td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              </details>
+            );
+          })}
+
+          {history.length === 0 && (
+            <p style={{ color: "#94a3b8" }}>
+              해당 학생의 변경 이력이 없습니다.
+            </p>
           )}
         </section>
       )}
