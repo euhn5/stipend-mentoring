@@ -1,7 +1,7 @@
 
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { and, desc, eq } from "drizzle-orm";
+import { and, desc, eq, like, or } from "drizzle-orm";
 
 import { db } from "@/db/client";
 import { auditLog } from "@/db/schema";
@@ -175,19 +175,37 @@ export default async function StudentPage({
     sixMonthFundTotals.F13;
 
   // 변경 이력 탭에서만 감사로그 조회
+  
+  // 해당 학생의 학적·지원요건·지급 변경 이력
   const history =
     tab === "history"
       ? await db
           .select()
           .from(auditLog)
           .where(
-            and(
-              eq(auditLog.tableName, "student_monthly"),
-              eq(auditLog.rowKey, `${ym}|${studentNo}`)
+            or(
+              // 학적 변경 이력
+              and(
+                eq(auditLog.tableName, "student_monthly"),
+                eq(auditLog.rowKey, `${ym}|${studentNo}`)
+              ),
+
+              // 지원요건 판정 변경 이력
+              and(
+                eq(auditLog.tableName, "eligibility_result"),
+                eq(auditLog.rowKey, `${ym}|${studentNo}`)
+              ),
+
+              // 지급 변경 이력: 재원별 고유 키에 학번이 포함됨
+              and(
+                eq(auditLog.tableName, "payment"),
+                like(auditLog.rowKey, `PAY-${ym}-${studentNo}-%`)
+              )
             )
           )
           .orderBy(desc(auditLog.logId))
       : [];
+
 
   // 탭 링크
   function TabLink({
@@ -669,7 +687,7 @@ export default async function StudentPage({
       {tab === "history" && (
         <section style={{ ...cardStyle, marginTop: 24 }}>
           <h2 style={{ fontSize: 20, fontWeight: 600 }}>
-            학적 변경 이력
+            학생 데이터 변경 이력
           </h2>
 
           <p
