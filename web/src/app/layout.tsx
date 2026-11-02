@@ -27,6 +27,10 @@ export const metadata: Metadata = {
 
 const menus = [
   {
+    name: "학기별 현황",
+    href: "/semester?term=2026-1&view=roster",
+  },
+  {
     name: "학생연구자 명부",
     href: "/roster?ym=2026-03",
   },
