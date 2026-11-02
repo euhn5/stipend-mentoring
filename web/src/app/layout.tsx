@@ -26,6 +26,12 @@ export const metadata: Metadata = {
 };
 
 const menus = [
+  
+  {
+    name: "정합성 점검",
+    href: "/checks?ym=2026-03&accountId=A01",
+  },
+
   {
     name: "학기별 현황",
     href: "/semester?term=2026-1&view=roster",
