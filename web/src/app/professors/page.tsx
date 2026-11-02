@@ -1,4 +1,4 @@
-
+import { maskResearcherNo } from "@/lib/format";
 import Link from "next/link";
 import { db } from "@/db/client";
 import { professor } from "@/db/schema";
@@ -380,7 +380,9 @@ export default async function ProfessorsPage({
                     </Link>
                   </td>
 
-                  <td style={cellStyle}>{row.researcherNo}</td>
+                  <td style={cellStyle}>
+                    {maskResearcherNo(row.researcherNo)}
+                  </td>
                   <td style={cellStyle}>{row.dept}</td>
                   <td style={cellStyle}>{row.studentCount}명</td>
 

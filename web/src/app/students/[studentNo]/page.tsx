@@ -1,4 +1,4 @@
-
+import { maskResearcherNo } from "@/lib/format";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { and, desc, eq, like, or } from "drizzle-orm";
@@ -291,7 +291,8 @@ export default async function StudentPage({
             학적 정보
           </h2>
 
-          <InfoRow label="연구자번호" value={student.researcherNo} />
+          <InfoRow label="연구자번호" value={ student.researcherNo
+                                            ? maskResearcherNo(student.researcherNo) : "-"}/>
           <InfoRow label="출신대학교" value={student.originUniv} />
           <InfoRow label="학적상태" value={student.acadStatus} />
           <InfoRow label="현재 학기" value={student.semesterNo} />
