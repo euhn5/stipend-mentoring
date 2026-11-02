@@ -1,36 +1,168 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 연구생활장려금 관리 시스템 (Stipend Mentoring)
 
-## Getting Started
+학생연구자의 학적 정보, 연구지원금 지급내역, 기관계정 정보를 통합 관리하는 웹 기반 관리 시스템입니다.
 
-First, run the development server:
+학적·지급·기관계정의 데이터 연동, 지급 현황 조회, 정합성 검사, 감사로그 관리, 역할별 접근 권한 관리 기능을 제공합니다.
+
+## 1. 주요 기능
+
+### 학생연구자 명부 관리
+- 기준월별 학생연구자 명부 조회
+- 학적상태 및 연구지원 자격 확인
+- 지도교수별 담당 학생 조회
+- 학생별 상세 정보 확인
+
+### 연구지원금 지급 관리
+- 기준월별 지급내역 조회
+- 재원별 지급금액 및 지급 현황 확인
+- 지급 계획과 실제 지급금액 비교
+- 지급 부족 학생 및 부족금액 확인
+
+### 데이터 연동
+- JOB-ACAD: 학적 데이터 연동
+- JOB-PAY: 지급 데이터 연동
+- JOB-ACCT: 기관계정 데이터 연동
+- 수동 연동 및 예약 연동 API 지원
+- Mock 원천 데이터를 활용한 연동 테스트
+
+### 데이터 정합성 및 이력 관리
+- CHK-01~CHK-08 정합성 검사
+- 데이터 변경 감사로그 기록
+- 연동 결과 및 오류 확인
+- 알림 조회 및 읽음 처리
+
+### 로그인 및 접근 권한
+- 관리자(ADMIN)와 지도교수(PROF) 역할 구분
+- 관리자는 전체 학생 및 관리 기능 접근 가능
+- 지도교수는 본인 담당 학생의 명부와 지급 현황 조회
+- 관리자 전용 페이지 및 서버 액션 접근 제한
+- 서명된 세션 쿠키 기반 로그인 관리
+
+## 2. 기술 스택
+
+| 구분 | 기술 |
+|---|---|
+| 프레임워크 | Next.js 16 |
+| 언어 | TypeScript |
+| UI | React 19, Tailwind CSS |
+| 데이터베이스 | SQLite |
+| ORM | Drizzle ORM |
+| 인증 | 서명된 세션 쿠키 |
+| 테스트 | Vitest |
+| 버전 관리 | Git |
+
+## 3. 프로젝트 구조
+
+```text
+stipend-mentoring/
+├── README.md                 # 개발 요구사항 및 지침
+└── web/
+    ├── src/
+    │   ├── app/              # 페이지, 서버 액션, API
+    │   ├── db/               # DB 스키마 및 초기 데이터
+    │   ├── domain/           # 업무 규칙
+    │   ├── jobs/             # 데이터 연동 작업
+    │   ├── lib/              # 인증, 권한, 공통 유틸리티
+    │   ├── queries/          # 데이터 조회
+    │   └── proxy.ts          # 접근 제어
+    ├── .env.example
+    ├── package.json
+    └── README.md
+```
+
+## 4. 로컬 실행 방법
+
+Node.js 및 npm이 설치되어 있어야 합니다.
+
+프로젝트의 `web` 폴더에서 다음 명령어를 실행합니다.
+
+```bash
+npm install
+```
+
+환경변수는 `.env.example`을 참고하여 개발 환경에 맞게 설정합니다.
+
+주요 환경변수:
+
+- `DATABASE_URL`: 데이터베이스 연결 경로
+- `SESSION_SECRET`: 세션 서명용 비밀키
+- `CRON_SECRET`: 예약 연동 API 인증키
+
+실제 비밀키 및 데이터베이스 파일은 Git에 업로드하지 않습니다.
+
+개발용 데이터베이스를 준비합니다.
+
+```bash
+npm run db:push
+npm run db:seed
+```
+
+로그인 계정 초기화는 `src/db/seed-auth.ts`를 사용합니다. 실행 전 필요한 지도교수 데이터가 준비되어 있어야 합니다.
+
+개발 서버를 실행합니다.
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+브라우저에서 http://localhost:3000 에 접속합니다.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Windows PowerShell에서 npm 실행이 제한되는 경우 `npm.cmd` 또는 `npx.cmd`를 사용할 수 있습니다.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## 5. 사용자 권한
 
-## Learn More
+| 기능 | ADMIN | PROF |
+|---|---|---|
+| 전체 학생 명부 조회 | 가능 | 불가 |
+| 본인 담당 학생 조회 | 가능 | 가능 |
+| 담당 학생 지급 현황 조회 | 가능 | 가능 |
+| 기관계정 관리 | 가능 | 불가 |
+| 기준정보 수정 | 가능 | 불가 |
+| Mock 원천 수정 | 가능 | 불가 |
+| 수동 연동 실행 | 가능 | 불가 |
+| 지급 계획 수정 | 가능 | 불가 |
+| 알림 관리 | 가능 | 불가 |
 
-To learn more about Next.js, take a look at the following resources:
+## 6. 테스트 및 빌드
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+TypeScript 검사:
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```bash
+npx tsc --noEmit
+```
 
-## Deploy on Vercel
+전체 자동 테스트:
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+```bash
+npm test
+```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+프로덕션 빌드:
+
+```bash
+npm run build
+```
+
+2026년 11월 2일 기준 검증 결과:
+
+- 전체 테스트 파일 19개 통과
+- 자동 테스트 85개 통과
+- 권한 관련 테스트 17개 포함
+- TypeScript 검사 통과
+- Next.js 프로덕션 빌드 성공
+
+## 7. 개발 환경 및 보안 주의사항
+
+본 프로젝트는 개발 및 학습 목적의 시스템입니다.
+
+`seed-auth.ts`에는 개발용 초기 계정과 공통 비밀번호가 포함되어 있으므로 실제 운영 환경에 그대로 사용해서는 안 됩니다.
+
+운영 배포 전에는 초기 비밀번호 변경, 환경변수 관리, 실제 요청 기반 권한 검증, 데이터베이스 운영 설정 등의 추가 점검이 필요합니다.
+
+예약 연동 API는 `CRON_SECRET`을 이용한 Bearer 인증으로 보호됩니다.
+
+## 8. 개발 상태
+
+핵심 데이터 연동 및 조회 기능, 정합성 검사, 감사로그, 로그인과 역할별 접근 권한을 구현했습니다.
+
+현재는 로컬 개발 환경에서 기능 검증을 완료한 단계이며, 실제 운영 배포를 위한 보안 및 운영 검증은 별도로 필요합니다.
