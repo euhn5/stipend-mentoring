@@ -1,4 +1,4 @@
-
+import AccountSwitcher from "./AccountSwitcher";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { asc } from "drizzle-orm";
@@ -167,6 +167,7 @@ export default async function AccountPage({
         margin: "0 auto",
       }}
     >
+      <AccountSwitcher />
       <h1 style={{ fontSize: 28, fontWeight: 700 }}>
         기관계정 원장
       </h1>
@@ -285,27 +286,7 @@ export default async function AccountPage({
           </Link>
         </form>
 
-        <div style={{ marginTop: 16 }}>
-          계정 변경:{" "}
-          {accounts.map((item) => (
-            <Link
-              key={item.accountId}
-              href={`/accounts/${encodeURIComponent(item.accountId)}`}
-              style={{
-                display: "inline-block",
-                marginRight: 16,
-                color:
-                  item.accountId === accountId
-                    ? "#ffffff"
-                    : "#93c5fd",
-                fontWeight:
-                  item.accountId === accountId ? 700 : 400,
-              }}
-            >
-              {item.accountId} · {item.accountName}
-            </Link>
-          ))}
-        </div>
+        
       </section>
 
       {/* 전체 요약 */}
