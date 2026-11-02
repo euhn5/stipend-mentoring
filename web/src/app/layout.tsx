@@ -26,6 +26,10 @@ export const metadata: Metadata = {
 };
 
 const menus = [
+  {
+    name: "지급 계획 vs 실지급",
+    href: "/payments/plan?ym=2026-03",
+  },
   
   {
     name: "정합성 점검",
