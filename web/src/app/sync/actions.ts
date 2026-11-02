@@ -1,13 +1,19 @@
 
 "use server";
-
+import { requireAdmin } from "@/lib/authorization";
 import { redirect } from "next/navigation";
 import { runAcadJob } from "@/jobs/acad";
 import { runPayJob } from "@/jobs/pay";
 import { runAcctJob } from "@/jobs/acct";
 
+
+
 export async function runSyncAction(formData: FormData) {
+  await requireAdmin();
+
   const jobCode = String(formData.get("jobCode") ?? "");
+
+
 
   let syncId: number;
 

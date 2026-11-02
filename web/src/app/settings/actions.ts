@@ -7,16 +7,23 @@ import { revalidatePath } from "next/cache";
 import { db } from "@/db/client";
 import { ruleConfig } from "@/db/schema";
 import { recordAudit } from "@/lib/audit";
+import { requireAdmin } from "@/lib/authorization";
 import {
   ACAD_STATUSES,
   ACTIVITY_TYPES,
 } from "@/lib/codes";
 
+
+
 export async function saveRuleConfig(
   formData: FormData
 ): Promise<void> {
+  const session = await requireAdmin();
+
+
   const key = String(formData.get("key") ?? "").trim();
   const value = String(formData.get("value") ?? "").trim();
+
 
   if (!key || !value) {
     throw new Error("설정 항목과 값을 입력해 주세요.");
@@ -101,7 +108,7 @@ export async function saveRuleConfig(
         ...current,
         value,
       },
-      actor: "admin",
+      actor: session.userId,
     });
   });
 

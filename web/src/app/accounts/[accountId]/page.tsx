@@ -2,7 +2,6 @@ import AccountSwitcher from "./AccountSwitcher";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { asc } from "drizzle-orm";
-
 import { db } from "@/db/client";
 import { account } from "@/db/schema";
 import {

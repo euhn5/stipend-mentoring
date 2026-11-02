@@ -1,4 +1,5 @@
-
+import { redirect } from "next/navigation";
+import { getSession } from "@/lib/session";
 import Link from "next/link";
 
 import {
@@ -135,16 +136,37 @@ export default async function PaymentsPage({
       ? params.meets
       : undefined;
 
-  // 필터 목록 생성용 전체 학생
-  const allRows = await getPayments({ ym });
+  
+  // 로그인 사용자 확인
+  const session = await getSession();
 
-  // 사용자가 선택한 조건에 맞는 학생
+  if (!session) {
+    redirect("/login");
+  }
+
+  // 지도교수는 자신의 교수 ID만 적용
+  const effectiveAdvisor =
+    session.role === "PROF"
+      ? session.profId!
+      : params.advisor || undefined;
+
+  // 필터 목록 생성용 데이터도 담당 학생으로 제한
+  const allRows = await getPayments({
+    ym,
+    advisor:
+      session.role === "PROF"
+        ? session.profId!
+        : undefined,
+  });
+
+  // 실제 지급내역 조회
   const rows = await getPayments({
     ym,
-    advisor: params.advisor || undefined,
+    advisor: effectiveAdvisor,
     meets,
     q: params.q || undefined,
   });
+
 
   const advisors = [
     ...new Map(

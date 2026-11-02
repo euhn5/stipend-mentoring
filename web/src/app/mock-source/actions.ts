@@ -5,6 +5,7 @@ import { eq } from "drizzle-orm";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 
+import { requireAdmin } from "@/lib/authorization";
 import { db } from "@/db/client";
 import {
   srcAcademicMonthly,
@@ -33,6 +34,9 @@ function resultUrl(
 export async function updateAcademicSource(
   formData: FormData
 ) {
+  // 관리자 권한 검사
+  await requireAdmin();
+
   const srcId = valueOf(formData, "srcId");
   const ym = valueOf(formData, "ym");
   const dept = valueOf(formData, "dept");
@@ -82,11 +86,15 @@ export async function updateAcademicSource(
 export async function updatePaymentSource(
   formData: FormData
 ) {
+  // 관리자 권한 검사
+  await requireAdmin();
+
   const srcId = valueOf(formData, "srcId");
   const ym = valueOf(formData, "ym");
   const fundCode = valueOf(formData, "fundCode");
   const amountText = valueOf(formData, "amount");
 
+  // 입력한 금액을 숫자로 변환
   const amount = Number(amountText);
 
   if (

@@ -1,6 +1,7 @@
 
 import Link from "next/link";
-
+import { redirect } from "next/navigation";
+import { getSession } from "@/lib/session";
 import { getRoster } from "@/queries/roster";
 import {
   FUND_CODES,
@@ -120,22 +121,45 @@ export default async function HomePage({
     ? params.ym!
     : "2026-03";
 
-  // 선택한 탭에 필요한 데이터만 조회
-  const roster =
-    tab === "roster" ? await getRoster({ ym }) : [];
 
+  // 로그인 사용자 확인
+  const session = await getSession();
+
+  if (!session) {
+    redirect("/login");
+  }
+
+  if (session.role === "PROF" && tab === "accounts") {
+    redirect("/?tab=roster&ym=" + ym);
+  }
+
+  // 지도교수는 본인 담당 학생만 조회
+  const advisor =
+    session.role === "PROF"
+      ? session.profId!
+      : undefined;
+
+  // 학생 명부 데이터
+  const roster =
+    tab === "roster"
+      ? await getRoster({ ym, advisor })
+      : [];
+
+  // 지급내역 데이터
   const payments =
     tab === "payments"
-      ? await getPayments({ ym })
+      ? await getPayments({ ym, advisor })
       : [];
 
+  // 기관계정은 관리자만 조회 가능
   const accounts =
-    tab === "accounts"
+    tab === "accounts" && session.role === "ADMIN"
       ? await Promise.all([
-          getAccountSummary("A01"),
-          getAccountSummary("A02"),
-        ])
+        getAccountSummary("A01"),
+        getAccountSummary("A02"),
+      ])
       : [];
+
 
   const overallO = roster.filter(
     (row) => row.overall === "O"
@@ -254,11 +278,15 @@ export default async function HomePage({
           borderBottom: "1px solid #475569",
         }}
       >
+
         {[
           { id: "roster", name: "명부" },
           { id: "payments", name: "지급" },
-          { id: "accounts", name: "기관계정" },
+          ...(session.role === "ADMIN"
+            ? [{ id: "accounts", name: "기관계정" }]
+            : []),
         ].map((item) => (
+
           <Link
             key={item.id}
             href={`/?tab=${item.id}&ym=${ym}`}
@@ -501,9 +529,9 @@ export default async function HomePage({
                       <td style={cellStyle}>
                         {totalPaid > 0
                           ? `${(
-                              (row.amount / totalPaid) *
-                              100
-                            ).toFixed(1)}%`
+                            (row.amount / totalPaid) *
+                            100
+                          ).toFixed(1)}%`
                           : "0.0%"}
                       </td>
                     </tr>

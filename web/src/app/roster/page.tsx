@@ -1,4 +1,5 @@
-
+import { redirect } from "next/navigation";
+import { getSession } from "@/lib/session";
 import Link from "next/link";
 import { getRoster } from "@/queries/roster";
 import type { CheckResult } from "@/domain/checks";
@@ -90,18 +91,38 @@ export default async function RosterPage({
       ? params.overall
       : undefined;
 
-  // 1. 전체 명부: 필터 선택지 생성
-  const allRows = await getRoster({ ym });
+  
+  // 로그인 사용자 확인
+  const session = await getSession();
 
-  // 2. 검색 조건 적용
+  if (!session) {
+    redirect("/login");
+  }
+
+  // 지도교수는 본인 교수 ID만 사용
+  const effectiveAdvisor =
+    session.role === "PROF"
+      ? session.profId!
+      : params.advisor || undefined;
+
+  // 1. 필터 선택지용 명부도 권한에 따라 제한
+  const allRows = await getRoster({
+    ym,
+    advisor: session.role === "PROF"
+      ? session.profId!
+      : undefined,
+  });
+
+  // 2. 실제 명부 조회에도 같은 권한 적용
   const rows = await getRoster({
     ym,
     degree: params.degree || undefined,
     dept: params.dept || undefined,
-    advisor: params.advisor || undefined,
+    advisor: effectiveAdvisor,
     overall,
     q: params.q || undefined,
   });
+
 
   // 학위 목록
   const degrees = [

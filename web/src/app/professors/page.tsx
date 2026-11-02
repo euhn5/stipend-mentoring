@@ -4,6 +4,8 @@ import { db } from "@/db/client";
 import { professor } from "@/db/schema";
 import { getRoster } from "@/queries/roster";
 import { getPayments } from "@/queries/payments";
+import { redirect } from "next/navigation";
+import { getSession } from "@/lib/session";
 
 type SearchParams = {
   ym?: string;
@@ -30,14 +32,36 @@ export default async function ProfessorsPage({
     ? "payments"
     : "roster";
 
-  // 등록된 지도교수
-  const professors = await db.select().from(professor);
+
+  // 로그인 사용자 확인
+  const session = await getSession();
+
+  if (!session) {
+    redirect("/login");
+  }
+
+  // 지도교수는 본인 교수 ID만 조회
+  const advisor =
+    session.role === "PROF"
+      ? session.profId!
+      : undefined;
+
+  // 등록된 지도교수 조회
+  const professors = await db
+    .select()
+    .from(professor)
+    .then((rows) =>
+      session.role === "PROF"
+        ? rows.filter((row) => row.profId === advisor)
+        : rows
+    );
 
   // 학적 및 지급내역 조회
-  const students = await getRoster({ ym });
+  const students = await getRoster({ ym, advisor });
+
   const payments =
-    view === "payments" 
-      ? await getPayments({ ym })
+    view === "payments"
+      ? await getPayments({ ym, advisor })
       : [];
 
   // 지도교수별 집계

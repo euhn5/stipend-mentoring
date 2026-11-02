@@ -1,8 +1,8 @@
 import { maskResearcherNo } from "@/lib/format";
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { and, desc, eq, like, or } from "drizzle-orm";
-
+import { getSession } from "@/lib/session";
 import { db } from "@/db/client";
 import { auditLog } from "@/db/schema";
 import { addMonths } from "@/domain/month";
@@ -112,12 +112,42 @@ export default async function StudentPage({
           : "info";
 
   // 학생 기본 정보 조회
+
+  // 로그인 사용자 확인
+  const session = await getSession();
+
+  if (!session) {
+    redirect("/login");
+  }
+
+  // 학생 기본 정보 조회
   const students = await getRoster({ ym });
-  const student = students.find((row) => row.studentNo === studentNo);
+  const student = students.find(
+    (row) => row.studentNo === studentNo
+  );
 
   if (!student) {
     notFound();
   }
+  
+  console.log("===== 학생 접근 권한 확인 =====");
+  console.log("로그인 사용자:", session.userId);
+  console.log("사용자 권한:", session.role);
+  console.log("로그인 교수 ID:", session.profId);
+  console.log("조회 학생 학번:", student.studentNo);
+  console.log("학생 지도교수 ID:", student.advisorId);
+
+
+  // 지도교수는 자신이 담당하는 학생만 조회 가능
+  if (
+    session.role === "PROF" &&
+    student.advisorId !== session.profId
+  ) {
+    notFound();
+  }
+
+  // 기준월부터 6개월 생성
+
 
   // 기준월부터 6개월 생성
   const paymentMonths = Array.from(
@@ -129,16 +159,16 @@ export default async function StudentPage({
   const paymentHistory =
     tab === "payments"
       ? await Promise.all(
-          paymentMonths.map(async (month) => {
-            const rows = await getPayments({ ym: month });
+        paymentMonths.map(async (month) => {
+          const rows = await getPayments({ ym: month });
 
-            return {
-              ym: month,
-              payment:
-                rows.find((row) => row.studentNo === studentNo) ?? null,
-            };
-          })
-        )
+          return {
+            ym: month,
+            payment:
+              rows.find((row) => row.studentNo === studentNo) ?? null,
+          };
+        })
+      )
       : [];
 
   const payment = paymentHistory[0]?.payment ?? null;
@@ -175,35 +205,35 @@ export default async function StudentPage({
     sixMonthFundTotals.F13;
 
   // 변경 이력 탭에서만 감사로그 조회
-  
+
   // 해당 학생의 학적·지원요건·지급 변경 이력
   const history =
     tab === "history"
       ? await db
-          .select()
-          .from(auditLog)
-          .where(
-            or(
-              // 학적 변경 이력
-              and(
-                eq(auditLog.tableName, "student_monthly"),
-                eq(auditLog.rowKey, `${ym}|${studentNo}`)
-              ),
+        .select()
+        .from(auditLog)
+        .where(
+          or(
+            // 학적 변경 이력
+            and(
+              eq(auditLog.tableName, "student_monthly"),
+              eq(auditLog.rowKey, `${ym}|${studentNo}`)
+            ),
 
-              // 지원요건 판정 변경 이력
-              and(
-                eq(auditLog.tableName, "eligibility_result"),
-                eq(auditLog.rowKey, `${ym}|${studentNo}`)
-              ),
+            // 지원요건 판정 변경 이력
+            and(
+              eq(auditLog.tableName, "eligibility_result"),
+              eq(auditLog.rowKey, `${ym}|${studentNo}`)
+            ),
 
-              // 지급 변경 이력: 재원별 고유 키에 학번이 포함됨
-              and(
-                eq(auditLog.tableName, "payment"),
-                like(auditLog.rowKey, `PAY-${ym}-${studentNo}-%`)
-              )
+            // 지급 변경 이력: 재원별 고유 키에 학번이 포함됨
+            and(
+              eq(auditLog.tableName, "payment"),
+              like(auditLog.rowKey, `PAY-${ym}-${studentNo}-%`)
             )
           )
-          .orderBy(desc(auditLog.logId))
+        )
+        .orderBy(desc(auditLog.logId))
       : [];
 
 
@@ -291,8 +321,8 @@ export default async function StudentPage({
             학적 정보
           </h2>
 
-          <InfoRow label="연구자번호" value={ student.researcherNo
-                                            ? maskResearcherNo(student.researcherNo) : "-"}/>
+          <InfoRow label="연구자번호" value={student.researcherNo
+            ? maskResearcherNo(student.researcherNo) : "-"} />
           <InfoRow label="출신대학교" value={student.originUniv} />
           <InfoRow label="학적상태" value={student.acadStatus} />
           <InfoRow label="현재 학기" value={student.semesterNo} />
@@ -713,10 +743,10 @@ export default async function StudentPage({
             ];
 
             const changedFields = fields.filter(
-                (field) =>
-                    field !== "syncedAt" &&
-                    JSON.stringify(before[field]) !==
-                    JSON.stringify(after[field])
+              (field) =>
+                field !== "syncedAt" &&
+                JSON.stringify(before[field]) !==
+                JSON.stringify(after[field])
             );
 
 

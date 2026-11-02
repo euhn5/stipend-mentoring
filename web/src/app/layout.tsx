@@ -1,6 +1,7 @@
-
+import { logoutAction } from "@/app/login/actions";
 import type { Metadata } from "next";
 import Link from "next/link";
+import { getSession } from "@/lib/session";
 import { Geist, Geist_Mono } from "next/font/google";
 import { count, eq } from "drizzle-orm";
 
@@ -34,7 +35,7 @@ const menus = [
     name: "지급 계획 vs 실지급",
     href: "/payments/plan?ym=2026-03",
   },
-  
+
   {
     name: "정합성 점검",
     href: "/checks?ym=2026-03&accountId=A01",
@@ -74,9 +75,14 @@ const menus = [
   },
 ];
 
+
+
 export default async function RootLayout({
   children,
 }: LayoutProps<"/">) {
+  const session = await getSession();
+  const isAdmin = session?.role === "ADMIN";
+
   // 안 읽은 알림 개수 조회
   const [result] = await db
     .select({
@@ -87,6 +93,7 @@ export default async function RootLayout({
 
   const unreadCount = result?.unreadCount ?? 0;
 
+
   return (
     <html
       lang="ko"
@@ -94,47 +101,76 @@ export default async function RootLayout({
     >
       <body className="min-h-full bg-gray-50 text-gray-900">
         <div className="flex min-h-screen">
-          <aside className="w-64 shrink-0 bg-slate-900 p-6 text-white">
+
+          <aside className="sticky top-0 flex h-screen w-64 shrink-0 flex-col bg-slate-900 p-6 text-white">
             {/* 시스템 제목 */}
             <Link
               href="/"
-              className="mb-10 block text-xl font-bold"
+              className="mb-6 block shrink-0 text-xl font-bold"
             >
               연구생활장려금
             </Link>
 
-            {/* 기존 메뉴 */}
-            <nav className="space-y-2">
-              {menus.map((menu) => (
-                <Link
-                  key={menu.href}
-                  href={menu.href}
-                  className="block rounded-lg px-4 py-3 text-sm text-slate-200 transition-colors hover:bg-slate-700 hover:text-white"
-                >
-                  {menu.name}
-                </Link>
-              ))}
+            {/* 메뉴만 스크롤 */}
+            <nav className="min-h-0 flex-1 space-y-2 overflow-y-auto">
 
-              {/* 알림함 메뉴 */}
-              <Link
-                href="/notifications"
-                className="flex items-center justify-between gap-3 rounded-lg px-4 py-3 text-sm text-slate-200 transition-colors hover:bg-slate-700 hover:text-white"
-              >
-                <span>알림함</span>
+              {menus
+                .filter((menu) => {
+                  if (isAdmin) return true;
 
-                {unreadCount > 0 && (
-                  <span
-                    className="inline-flex min-w-6 items-center justify-center rounded-full bg-red-500 px-2 py-1 text-xs font-bold text-white"
-                    aria-label={`안 읽은 알림 ${unreadCount}건`}
+                  const path = menu.href.split("?")[0];
+
+                  return [
+                    "/roster",
+                    "/professors",
+                    "/payments",
+                  ].includes(path);
+                })
+                .map((menu) => (
+
+                  <Link
+                    key={menu.href}
+                    href={menu.href}
+                    className="block rounded-lg px-4 py-3 text-sm text-slate-200 transition-colors hover:bg-slate-700 hover:text-white"
                   >
-                    {unreadCount > 99
-                      ? "99+"
-                      : unreadCount}
-                  </span>
-                )}
-              </Link>
+                    {menu.name}
+                  </Link>
+                ))}
+
+
+              {/* 알림함 메뉴: 관리자에게만 표시 */}
+              {isAdmin && (
+                <Link
+                  href="/notifications"
+                  className="flex items-center justify-between gap-3 rounded-lg px-4 py-3 text-sm text-slate-200 transition-colors hover:bg-slate-700 hover:text-white"
+                >
+                  <span>알림함</span>
+
+                  {unreadCount > 0 && (
+                    <span
+                      className="inline-flex min-w-6 items-center justify-center rounded-full bg-red-500 px-2 py-1 text-xs font-bold text-white"
+                      aria-label={`안 읽은 알림 ${unreadCount}건`}
+                    >
+                      {unreadCount > 99 ? "99+" : unreadCount}
+                    </span>
+                  )}
+                </Link>
+              )}
+
+
             </nav>
+
+            {/* 하단 고정 로그아웃 버튼 */}
+            <form action={logoutAction} className="mt-4 shrink-0">
+              <button
+                type="submit"
+                className="w-full rounded-lg border border-slate-600 px-4 py-3 text-left text-sm text-slate-200 transition-colors hover:bg-slate-700 hover:text-white"
+              >
+                로그아웃
+              </button>
+            </form>
           </aside>
+
 
           {/* 페이지 본문 */}
           <main className="min-w-0 flex-1 p-8">
@@ -142,6 +178,6 @@ export default async function RootLayout({
           </main>
         </div>
       </body>
-    </html>
+    </html >
   );
 }
