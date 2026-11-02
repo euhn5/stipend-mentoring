@@ -27,6 +27,10 @@ export const metadata: Metadata = {
 
 const menus = [
   {
+    name: "기준정보 관리",
+    href: "/settings",
+  },
+  {
     name: "지급 계획 vs 실지급",
     href: "/payments/plan?ym=2026-03",
   },
