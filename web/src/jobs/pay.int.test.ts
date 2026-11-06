@@ -228,6 +228,51 @@ describe("JOB-PAY 지급 연동", () => {
     expect(before.srcRefId).toBe(targetSrcId);
     expect(before.amount).toBe(target.amount);
   });
+  
+  it("같은 월 지급 연동 오류를 재실행해도 관리자 알림과 감사로그가 중복되지 않는다", async () => {
+    // 1. 학생 명부 생성
+    const acad = await runAcadJob("2026-03", "MANUAL");
+    expect(acad.status).toBe("SUCCESS");
+
+    // 2. 첫 번째 지급 연동 (오류 2건 발생)
+    const first = await runPayJob("2026-03", "MANUAL");
+    expect(first.status).toBe("PARTIAL");
+
+    const alertsBefore = await db
+      .select()
+      .from(notification)
+      .where(eq(notification.type, "SYNC_ALERT"));
+
+    const auditsBefore = await db.select().from(auditLog);
+
+    expect(alertsBefore).toHaveLength(1);
+
+    // 3. 동일한 월의 지급 연동 재실행
+    const second = await runPayJob("2026-03", "MANUAL");
+    expect(second.status).toBe("PARTIAL");
+
+    // 4. 알림 개수가 증가하지 않았는지 확인
+    const alertsAfter = await db
+      .select()
+      .from(notification)
+      .where(eq(notification.type, "SYNC_ALERT"));
+
+    expect(alertsAfter).toHaveLength(1);
+
+    // 5. 감사로그도 중복 생성되지 않아야 함
+    const auditsAfter = await db.select().from(auditLog);
+
+    expect(auditsAfter.length).toBe(auditsBefore.length);
+
+    // 6. 두 번째 실행도 원천 오류 2건은 기록해야 함
+    const errors = await db
+      .select()
+      .from(syncError)
+      .where(eq(syncError.syncId, second.syncId));
+
+    expect(errors).toHaveLength(2);
+  });
+
 
 
 });

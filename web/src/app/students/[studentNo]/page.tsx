@@ -129,13 +129,7 @@ export default async function StudentPage({
   if (!student) {
     notFound();
   }
-  
-  console.log("===== 학생 접근 권한 확인 =====");
-  console.log("로그인 사용자:", session.userId);
-  console.log("사용자 권한:", session.role);
-  console.log("로그인 교수 ID:", session.profId);
-  console.log("조회 학생 학번:", student.studentNo);
-  console.log("학생 지도교수 ID:", student.advisorId);
+
 
 
   // 지도교수는 자신이 담당하는 학생만 조회 가능

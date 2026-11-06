@@ -1,7 +1,7 @@
 
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { db } from "@/db/client";
-import { syncLog, syncError } from "@/db/schema";
+import { syncLog, syncError, notification } from "@/db/schema";
 import type { Tx } from "@/lib/audit";
 import { createNotification } from "@/lib/notify";
 
@@ -62,17 +62,41 @@ export async function runJob(
   let errCnt = 0;
 
   // 오류가 있을 경우 관리자 알림 생성
+  
+  // 오류가 있을 경우 관리자 알림 생성
   async function alertAdmin(message: string) {
+    const title = `${jobCode} ${target} 연동 오류`;
+
     await db.transaction(async (tx) => {
+      // 동일한 작업과 대상 기간의 기존 오류 알림 조회
+      const [existing] = await tx
+        .select()
+        .from(notification)
+        .where(
+          and(
+            eq(notification.receiver, "ADMIN"),
+            eq(notification.type, "SYNC_ALERT"),
+            eq(notification.title, title)
+          )
+        )
+        .limit(1);
+
+      // 이미 알림이 있다면 중복 생성하지 않음
+      if (existing) {
+        return;
+      }
+
+      // 처음 발생한 오류일 때만 알림 생성
       await createNotification(tx, {
         receiver: "ADMIN",
         type: "SYNC_ALERT",
-        title: `${jobCode} ${target} 연동 오류`,
+        title,
         body: message,
         link: `/sync?syncId=${syncId}`,
       });
     });
   }
+
 
   // 2. 연동 처리
   try {
