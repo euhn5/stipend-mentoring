@@ -3,11 +3,23 @@ import "dotenv/config";
 
 import { eq } from "drizzle-orm";
 import { hash } from "bcryptjs";
-
 import { db } from "./client";
 import { appUser, professor } from "./schema";
 
+// 개발용 계정은 로컬 SQLite에서만 생성
+function assertLocalDatabase() {
+  const url = process.env.DATABASE_URL ?? "";
+
+  if (!url.startsWith("file:")) {
+    throw new Error(
+      "개발용 계정은 로컬 SQLite 데이터베이스에서만 생성할 수 있습니다."
+    );
+  }
+}
+
 async function seedAuth() {
+  // 데이터베이스 조회 및 계정 생성 전에 연결 대상 확인
+  assertLocalDatabase();
   // 기존 교수 데이터가 있는지 먼저 확인
   for (const profId of ["P01", "P02"]) {
     const [prof] = await db

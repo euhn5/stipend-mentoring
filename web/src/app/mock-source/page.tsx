@@ -1,5 +1,6 @@
 
 import Link from "next/link";
+import { notFound } from "next/navigation";
 import { asc, eq } from "drizzle-orm";
 
 import { db } from "@/db/client";
@@ -48,6 +49,11 @@ export default async function MockSourcePage({
 }: {
   searchParams: Promise<SearchParams>;
 }) {
+  // 운영 환경에서는 Mock 원천 편집 페이지 접근 차단
+  if (process.env.NODE_ENV === "production") {
+    notFound();
+  }
+
   const params = await searchParams;
 
   const table =

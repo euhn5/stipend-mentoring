@@ -11,6 +11,17 @@ import { db } from './client';
 import * as s from './schema';
 import { addMonths } from '../domain/month';
 
+// 테스트용 시드는 로컬 SQLite에서만 실행할 수 있다.
+function assertLocalDatabase() {
+  const url = process.env.DATABASE_URL ?? "";
+
+  if (!url.startsWith("file:")) {
+    throw new Error(
+      "안전상의 이유로 원격 데이터베이스에서는 시드를 실행할 수 없습니다."
+    );
+  }
+}
+
 const SEEDED_AT = '2026-03-01T00:00:00.000Z';
 const PERIOD = ['2026-03', '2026-04', '2026-05', '2026-06', '2026-07', '2026-08'];
 
@@ -232,6 +243,9 @@ async function seedAccounts() {
 
 /** 모든 테이블을 비우고 시드 데이터를 넣는다. 통합 테스트에서도 호출한다. */
 export async function seedAll() {
+  // 데이터를 삭제하기 전에 DB 연결 대상 검사
+  assertLocalDatabase();
+
   await clearAll();
   await seedRules();
   await seedAcademic();

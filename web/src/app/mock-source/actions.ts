@@ -30,12 +30,24 @@ function resultUrl(
   return `/mock-source?${params.toString()}`;
 }
 
+// 운영 환경에서는 Mock 원천 데이터 수정 금지
+function requireDevelopmentEnvironment() {
+  if (process.env.NODE_ENV === "production") {
+    throw new Error(
+      "운영 환경에서는 Mock 원천 데이터를 수정할 수 없습니다."
+    );
+  }
+}
+
 // Mock 학적 원천 수정
 export async function updateAcademicSource(
   formData: FormData
 ) {
   // 관리자 권한 검사
   await requireAdmin();
+
+  // 운영 환경 수정 차단
+  requireDevelopmentEnvironment();
 
   const srcId = valueOf(formData, "srcId");
   const ym = valueOf(formData, "ym");
@@ -88,6 +100,9 @@ export async function updatePaymentSource(
 ) {
   // 관리자 권한 검사
   await requireAdmin();
+
+  // 운영 환경 수정 차단
+  requireDevelopmentEnvironment();
 
   const srcId = valueOf(formData, "srcId");
   const ym = valueOf(formData, "ym");

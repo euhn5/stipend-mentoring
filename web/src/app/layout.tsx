@@ -116,10 +116,20 @@ export default async function RootLayout({
 
               {menus
                 .filter((menu) => {
-                  if (isAdmin) return true;
-
                   const path = menu.href.split("?")[0];
 
+                  // 운영 환경에서는 Mock 원천 메뉴 숨기기
+                  if (
+                    path === "/mock-source" &&
+                    process.env.NODE_ENV === "production"
+                  ) {
+                    return false;
+                  }
+
+                  // 관리자는 나머지 모든 메뉴 접근 가능
+                  if (isAdmin) return true;
+
+                  // 교수 계정은 지정된 메뉴만 표시
                   return [
                     "/roster",
                     "/professors",
@@ -127,7 +137,6 @@ export default async function RootLayout({
                   ].includes(path);
                 })
                 .map((menu) => (
-
                   <Link
                     key={menu.href}
                     href={menu.href}

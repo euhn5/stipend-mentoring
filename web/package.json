@@ -9,7 +9,7 @@
     "lint": "eslint",
     "db:push": "drizzle-kit push",
     "db:seed": "tsx src/db/seed.ts",
-    "db:reset": "drizzle-kit push --force && tsx src/db/seed.ts",
+    "db:reset": "tsx src/db/assert-local-db.ts && drizzle-kit push --force && tsx src/db/seed.ts",
     "db:studio": "drizzle-kit studio",
     "test:prepare": "dotenv run -q -f .env.test -- drizzle-kit push --force",
     "test": "npm run test:prepare && vitest run",
