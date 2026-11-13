@@ -22,8 +22,8 @@ function assertLocalDatabase() {
   }
 }
 
-const SEEDED_AT = '2026-03-01T00:00:00.000Z';
-const PERIOD = ['2026-03', '2026-04', '2026-05', '2026-06', '2026-07', '2026-08'];
+export const SEEDED_AT = '2026-03-01T00:00:00.000Z';
+export const PERIOD = ['2026-03', '2026-04', '2026-05', '2026-06', '2026-07', '2026-08'];
 
 type Pay = [fundCode: string, amount: number];
 type MonthState = { acadStatus: string; fulltimeYn: string; activityType: string };
@@ -46,7 +46,7 @@ type StudentSpec = {
 const normal: MonthState = { acadStatus: '재학', fulltimeYn: 'Y', activityType: 'RND' };
 const always = (p: Pay[]) => () => p;
 
-const STUDENTS: StudentSpec[] = [
+export const STUDENTS: StudentSpec[] = [
   {
     key: 'S01', studentNo: '2023210001', name: '김민준', degree: '박사', researcherNo: '20000001',
     originUniv: '동국대학교', dept: '컴퓨터공학과', semesterNo: 5, advisorId: 'P01', priorMonths: 24,
@@ -115,7 +115,7 @@ const STUDENTS: StudentSpec[] = [
   },
 ];
 
-const SYSTEM_CODE: Record<string, string> = {
+export const SYSTEM_CODE: Record<string, string> = {
   F11: 'UNIV', F12: 'UNIV', F13: 'UNIV', F20: 'RND', F30: 'BK21', F40: 'GOV', F90: 'ETC', F99: 'ETC',
 };
 
