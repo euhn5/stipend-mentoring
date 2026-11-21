@@ -70,36 +70,59 @@ stipend-mentoring/
     └── README.md
 ```
 
+
 ## 4. 로컬 실행 방법
 
 Node.js 및 npm이 설치되어 있어야 합니다.
 
-프로젝트의 `web` 폴더에서 다음 명령어를 실행합니다.
+모든 명령어는 `web/` 폴더에서 실행합니다.
+
+### 4-1. 패키지 설치
 
 ```bash
 npm install
 ```
 
-환경변수는 `.env.example`을 참고하여 개발 환경에 맞게 설정합니다.
+### 4-2. 환경변수 설정
+
+`.env.example`을 참고해 로컬 개발용 `.env` 파일을 준비합니다.
 
 주요 환경변수:
 
-- `DATABASE_URL`: 데이터베이스 연결 경로
-- `SESSION_SECRET`: 세션 서명용 비밀키
-- `CRON_SECRET`: 예약 연동 API 인증키
+- `DATABASE_URL=file:local.db`
+- `DATABASE_AUTH_TOKEN`은 로컬 SQLite에서 비워 둡니다.
+- `SESSION_SECRET`은 개발용으로 충분히 긴 문자열을 설정합니다.
+- `CRON_SECRET`은 예약 연동 API 인증에 사용합니다.
 
-실제 비밀키 및 데이터베이스 파일은 Git에 업로드하지 않습니다.
+실제 비밀키 및 데이터베이스 파일은 GitHub에 업로드하지 않습니다.
 
-개발용 데이터베이스를 준비합니다.
+### 4-3. 로컬 DB 초기화
 
 ```bash
 npm run db:push
 npm run db:seed
 ```
 
-로그인 계정 초기화는 `src/db/seed-auth.ts`를 사용합니다. 실행 전 필요한 지도교수 데이터가 준비되어 있어야 합니다.
+`db:seed`는 로컬 DB의 기존 데이터를 삭제하고 초기 데이터를 생성하므로, 처음 설치할 때만 실행하고 기존 데이터가 있는 경우 주의해야 합니다.
 
-개발 서버를 실행합니다.
+운영용 Turso DB에서는 실행하지 않습니다.
+
+### 4-4. 관리자 계정 먼저 생성
+
+```bash
+npx tsx src/db/seed-auth.ts
+```
+
+처음 실행하면 지도교수 데이터가 없어도 `admin` 계정이 생성됩니다.
+
+- 관리자 ID: `admin`
+- 로컬 개발용 초기 비밀번호: `pass1234`
+
+교수 데이터가 없는 경우 `p01`, `p02` 계정은 생성되지 않고 보류됩니다.
+
+**주의:** `pass1234`는 로컬 실습 전용 비밀번호입니다. 운영 환경에서 사용하면 안 됩니다.
+
+### 4-5. 개발 서버 실행
 
 ```bash
 npm run dev
@@ -107,7 +130,37 @@ npm run dev
 
 브라우저에서 http://localhost:3000 에 접속합니다.
 
-Windows PowerShell에서 npm 실행이 제한되는 경우 `npm.cmd` 또는 `npx.cmd`를 사용할 수 있습니다.
+관리자 계정으로 로그인합니다.
+
+### 4-6. 학적 데이터 연동
+
+관리자로 로그인한 다음 데이터 연동 화면에서 `JOB-ACAD`를 실행합니다.
+
+학적 연동이 완료되면 교수 데이터가 생성됩니다.
+
+### 4-7. 교수 계정 생성
+
+학적 연동이 끝나면 개발 서버와 별도의 터미널에서 다음 명령어를 실행합니다.
+
+```bash
+npx tsx src/db/seed-auth.ts
+```
+
+기존 관리자 계정은 유지하고, 교수 계정 `p01`, `p02`를 추가합니다.
+
+두 교수 계정의 로컬 개발용 초기 비밀번호 역시 `pass1234`입니다.
+
+### 4-8. Windows PowerShell 참고
+
+PowerShell에서 npm 실행이 제한되는 경우 `npm.cmd`, `npx.cmd`를 사용할 수 있습니다.
+
+예시:
+
+```powershell
+npm.cmd run dev
+npx.cmd tsx src/db/seed-auth.ts
+```
+
 
 ## 5. 사용자 권한
 

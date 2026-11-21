@@ -3,6 +3,9 @@ import "dotenv/config";
 
 import { eq } from "drizzle-orm";
 import { hash } from "bcryptjs";
+import { fileURLToPath } from "node:url";
+import { resolve } from "node:path";
+
 import { db } from "./client";
 import { appUser, professor } from "./schema";
 
@@ -17,69 +20,83 @@ function assertLocalDatabase() {
   }
 }
 
-async function seedAuth() {
-  // 데이터베이스 조회 및 계정 생성 전에 연결 대상 확인
+// 이미 존재하는 계정은 수정하지 않음
+async function createUser(
+  userId: string,
+  role: "ADMIN" | "PROF",
+  profId: string | null,
+  passwordHash: string
+) {
+  const [existing] = await db
+    .select()
+    .from(appUser)
+    .where(eq(appUser.userId, userId))
+    .limit(1);
+
+  if (existing) {
+    console.log(`${userId}: 이미 존재하여 건너뜀`);
+    return;
+  }
+
+  await db.insert(appUser).values({
+    userId,
+    role,
+    profId,
+    passwordHash,
+  });
+
+  console.log(`${userId}: 생성 완료`);
+}
+
+// 테스트에서도 호출할 수 있도록 함수 내보내기
+export async function seedAuth() {
   assertLocalDatabase();
-  // 기존 교수 데이터가 있는지 먼저 확인
-  for (const profId of ["P01", "P02"]) {
+
+  // 로컬 개발 전용 비밀번호
+  const passwordHash = await hash("pass1234", 12);
+
+  // 1. 교수 데이터가 없어도 관리자 계정 생성
+  await createUser("admin", "ADMIN", null, passwordHash);
+
+  // 2. 교수 데이터가 존재하는 경우에만 교수 계정 생성
+  const professors = [
+    { userId: "p01", profId: "P01" },
+    { userId: "p02", profId: "P02" },
+  ];
+
+  for (const user of professors) {
     const [prof] = await db
       .select()
       .from(professor)
-      .where(eq(professor.profId, profId))
+      .where(eq(professor.profId, user.profId))
       .limit(1);
 
     if (!prof) {
-      throw new Error(
-        `${profId} 교수가 없습니다. 먼저 JOB-ACAD를 실행하세요.`
+      console.log(
+        `${user.userId}: ${user.profId} 교수 데이터가 없어 생성 보류`
       );
-    }
-  }
-
-  // 개발용 초기 비밀번호를 해시로 변환
-  const passwordHash = await hash("pass1234", 12);
-
-  const users = [
-    {
-      userId: "admin",
-      role: "ADMIN",
-      profId: null,
-    },
-    {
-      userId: "p01",
-      role: "PROF",
-      profId: "P01",
-    },
-    {
-      userId: "p02",
-      role: "PROF",
-      profId: "P02",
-    },
-  ];
-
-  for (const user of users) {
-    const [existing] = await db
-      .select()
-      .from(appUser)
-      .where(eq(appUser.userId, user.userId))
-      .limit(1);
-
-    if (existing) {
-      console.log(`${user.userId}: 이미 존재하여 건너뜀`);
       continue;
     }
 
-    await db.insert(appUser).values({
-      ...user,
-      passwordHash,
-    });
-
-    console.log(`${user.userId}: 생성 완료`);
+    await createUser(
+      user.userId,
+      "PROF",
+      user.profId,
+      passwordHash
+    );
   }
 
   console.log("로그인 계정 설정 완료");
 }
 
-seedAuth().catch((error) => {
-  console.error(error);
-  process.exitCode = 1;
-});
+// 터미널에서 직접 실행한 경우에만 계정 생성
+const isDirectExecution =
+  process.argv[1] !== undefined &&
+  resolve(process.argv[1]) === fileURLToPath(import.meta.url);
+
+if (isDirectExecution) {
+  seedAuth().catch((error) => {
+    console.error(error);
+    process.exitCode = 1;
+  });
+}
