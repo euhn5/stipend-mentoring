@@ -242,7 +242,7 @@ export default async function SemesterPage({
             marginBottom: 16,
           }}
         >
-          금액 단위: 원 · 학적 미연동 월은 "-"로
+          금액 단위: 원 · 학적 미연동 월은 &quot;-&quot;로
           표시합니다. 지원자격이 없는 달의 부족금액은
           계산에서 제외합니다.
         </p>

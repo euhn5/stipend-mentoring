@@ -292,7 +292,7 @@ export default async function PaymentPlanPage({
           }}
         >
           계획금액을 입력하고 각 행의 저장 버튼을 누르세요.
-          계획이 없는 항목은 "-"로 표시하며, 0원 계획과
+          계획이 없는 항목은 &quot;-&quot;로 표시하며, 0원 계획과
           구분합니다.
         </p>
 

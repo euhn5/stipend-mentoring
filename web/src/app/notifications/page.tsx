@@ -1,5 +1,5 @@
 
-import { desc, eq } from "drizzle-orm";
+import { desc } from "drizzle-orm";
 
 import { db } from "@/db/client";
 import { notification } from "@/db/schema";

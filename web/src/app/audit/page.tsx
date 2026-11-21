@@ -31,11 +31,6 @@ const inputStyle = {
   borderRadius: 6,
 };
 
-const cellStyle = {
-  padding: 12,
-  borderBottom: "1px solid #334155",
-  whiteSpace: "nowrap" as const,
-};
 
 // 감사로그에 저장된 JSON 안전하게 읽기
 function parseJson(value: string | null): Record<string, unknown> {

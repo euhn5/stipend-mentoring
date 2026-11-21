@@ -33,6 +33,42 @@ const rowStyle = {
 const money = (value: number) =>
   `${value.toLocaleString("ko-KR")}원`;
 
+function TabLink({
+  label,
+  value,
+  tab,
+  studentNo,
+  ym,
+}: {
+  label: string;
+  value: StudentTab;
+  tab: StudentTab;
+  studentNo: string;
+  ym: string;
+}) {
+  const selected = tab === value;
+
+  return (
+    <Link
+      href={`/students/${encodeURIComponent(
+        studentNo
+      )}?ym=${encodeURIComponent(ym)}&tab=${value}`}
+      style={{
+        padding: "12px 20px",
+        borderBottom: selected
+          ? "3px solid #60a5fa"
+          : "3px solid transparent",
+        color: selected ? "#93c5fd" : "#94a3b8",
+        fontWeight: selected ? 700 : 400,
+        whiteSpace: "nowrap",
+      }}
+    >
+      {label}
+    </Link>
+  );
+}
+
+
 function InfoRow({
   label,
   value,
@@ -231,35 +267,6 @@ export default async function StudentPage({
       : [];
 
 
-  // 탭 링크
-  function TabLink({
-    label,
-    value,
-  }: {
-    label: string;
-    value: StudentTab;
-  }) {
-    const selected = tab === value;
-
-    return (
-      <Link
-        href={`/students/${encodeURIComponent(
-          studentNo
-        )}?ym=${encodeURIComponent(ym)}&tab=${value}`}
-        style={{
-          padding: "12px 20px",
-          borderBottom: selected
-            ? "3px solid #60a5fa"
-            : "3px solid transparent",
-          color: selected ? "#93c5fd" : "#94a3b8",
-          fontWeight: selected ? 700 : 400,
-          whiteSpace: "nowrap",
-        }}
-      >
-        {label}
-      </Link>
-    );
-  }
 
   return (
     <main style={{ padding: 32, maxWidth: 1100, margin: "0 auto" }}>
@@ -302,11 +309,37 @@ export default async function StudentPage({
           overflowX: "auto",
         }}
       >
-        <TabLink label="학적" value="info" />
-        <TabLink label="지원요건" value="requirements" />
-        <TabLink label="지급" value="payments" />
-        <TabLink label="변경 이력" value="history" />
+
+      <TabLink
+        label="학적"
+        value="info"
+        tab={tab}
+        studentNo={studentNo}
+        ym={ym}
+      />
+      <TabLink
+        label="지원요건"
+        value="requirements"
+        tab={tab}
+        studentNo={studentNo}
+        ym={ym}
+      />
+      <TabLink
+        label="지급"
+        value="payments"
+        tab={tab}
+        studentNo={studentNo}
+        ym={ym}
+      />
+      <TabLink
+        label="변경 이력"
+        value="history"
+        tab={tab}
+        studentNo={studentNo}
+        ym={ym}
+      />
       </nav>
+
 
       {/* 학적 탭 */}
       {tab === "info" && (
