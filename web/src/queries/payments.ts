@@ -168,8 +168,17 @@ export async function getPayments(
       .get(row.studentNo)!
       .add(row.fundCode);
   }
+  // 학생별 지급 재원코드를 미리 분류
+  const fundCodesMap = new Map<string, Set<string>>();
 
-  const rows: PaymentRow[] = [];
+  for (const row of fundTotals) {
+    const codes =
+      fundCodesMap.get(row.studentNo) ?? new Set<string>();
+
+    codes.add(row.fundCode);
+    fundCodesMap.set(row.studentNo, codes);
+  }
+    const rows: PaymentRow[] = [];
 
   // 8. 학생별 지급내역 생성
   for (const student of students) {
@@ -225,10 +234,8 @@ export async function getPayments(
       allCodes.add(code);
     }
 
-    for (const row of fundTotals) {
-      if (row.studentNo === studentNo) {
-        allCodes.add(row.fundCode);
-      }
+    for (const code of fundCodesMap.get(studentNo) ?? []) {
+      allCodes.add(code);
     }
 
     const differences: CheckResult["diffs"] = [];

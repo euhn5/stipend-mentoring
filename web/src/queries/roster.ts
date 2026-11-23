@@ -133,9 +133,28 @@ export async function getRoster(
       .map((s) => [s.studentNo!, s])
   );
 
+  // 5. 학생별 연구활동 이력을 한 번만 분류
+  const historyMap = new Map<
+    string,
+    { ym: string; activityType: string }[]
+  >();
+
+  for (const h of histories) {
+    if (h.ym === null || h.studentNo === null) continue;
+
+    const history = historyMap.get(h.studentNo) ?? [];
+
+    history.push({
+      ym: h.ym,
+      activityType: h.activityType ?? "NONE",
+    });
+
+    historyMap.set(h.studentNo, history);
+  }
+
   const rows: RosterRow[] = [];
 
-  // 5. 학생별 명부 생성
+  // 6. 학생별 명부 생성
   for (const student of students) {
     const result: Eligibility | undefined =
       resultMap.get(student.studentNo);
@@ -178,16 +197,11 @@ export async function getRoster(
         note: "원천에 없음",
       };
     } else {
-      const history = histories
-        .filter(
-          (h) =>
-            h.studentNo === student.studentNo &&
-            h.ym !== null
-        )
-        .map((h) => ({
-          ym: h.ym!,
-          activityType: h.activityType ?? "NONE",
-        }));
+      // 변경된 부분:
+      // 전체 이력을 다시 검색하지 않고
+      // 해당 학생의 이력만 Map에서 가져온다.
+      const history =
+        historyMap.get(student.studentNo) ?? [];
 
       const cum = countCumSupportMonths(
         history,
@@ -252,7 +266,7 @@ export async function getRoster(
     });
   }
 
-  // 6. 검색 조건 적용
+  // 7. 검색 조건 적용
   const q = filter.q?.trim().toLowerCase();
 
   return rows
