@@ -21,44 +21,74 @@ export const srcProfessor = sqliteTable('src_professor', {
   dept: text('dept'),
 });
 
-export const srcAcademicMonthly = sqliteTable('src_academic_monthly', {
-  srcId: text('src_id').primaryKey(),
-  baseYm: text('base_ym'),
-  studentNo: text('student_no'),
-  name: text('name'),
-  degree: text('degree'), // 석사 | 박사 | 석박통합
-  researcherNo: text('researcher_no'),
-  originUniv: text('origin_univ'),
-  dept: text('dept'),
-  acadStatus: text('acad_status'), // 재학 | 휴학 | 수료 | 졸업 | 제적
-  semesterNo: integer('semester_no'),
-  advisorId: text('advisor_id'),
-  fulltimeYn: text('fulltime_yn'), // Y | N
-  activityType: text('activity_type'), // RND | LAB | NONE
-  updatedAt: text('updated_at'),
-});
 
-export const srcResearchHistory = sqliteTable('src_research_history', {
-  srcId: text('src_id').primaryKey(),
-  studentNo: text('student_no'),
-  ym: text('ym'),
-  activityType: text('activity_type'), // RND | LAB | NONE
-});
+export const srcAcademicMonthly = sqliteTable(
+  'src_academic_monthly',
+  {
+    srcId: text('src_id').primaryKey(),
+    baseYm: text('base_ym'),
+    studentNo: text('student_no'),
+    name: text('name'),
+    degree: text('degree'), // 석사 | 박사 | 석박통합
+    researcherNo: text('researcher_no'),
+    originUniv: text('origin_univ'),
+    dept: text('dept'),
+    acadStatus: text('acad_status'), // 재학 | 휴학 | 수료 | 졸업 | 제적
+    semesterNo: integer('semester_no'),
+    advisorId: text('advisor_id'),
+    fulltimeYn: text('fulltime_yn'), // Y | N
+    activityType: text('activity_type'), // RND | LAB | NONE
+    updatedAt: text('updated_at'),
+  },
+  (t) => [
+    index('idx_src_academic_ym_student').on(
+      t.baseYm,
+      t.studentNo
+    ),
+  ]
+);
+
+
+
+export const srcResearchHistory = sqliteTable(
+  'src_research_history',
+  {
+    srcId: text('src_id').primaryKey(),
+    studentNo: text('student_no'),
+    ym: text('ym'),
+    activityType: text('activity_type'), // RND | LAB | NONE
+  },
+  (t) => [
+    index('idx_src_history_student').on(t.studentNo),
+  ]
+);
+
 
 // ─────────────────────────────────────────────
 // Mock 원천: 재원별 지급 시스템
 // ─────────────────────────────────────────────
 
-export const srcPayment = sqliteTable('src_payment', {
-  srcId: text('src_id').primaryKey(),
-  systemCode: text('system_code'), // 지급 시스템 구분 (예: UNIV, RND, BK21)
-  baseYm: text('base_ym'),
-  studentNo: text('student_no'),
-  fundCode: text('fund_code'),
-  amount: integer('amount'),
-  paidDate: text('paid_date'),
-  updatedAt: text('updated_at'),
-});
+
+export const srcPayment = sqliteTable(
+  'src_payment',
+  {
+    srcId: text('src_id').primaryKey(),
+    systemCode: text('system_code'), // 지급 시스템 구분 (예: UNIV, RND, BK21)
+    baseYm: text('base_ym'),
+    studentNo: text('student_no'),
+    fundCode: text('fund_code'),
+    amount: integer('amount'),
+    paidDate: text('paid_date'),
+    updatedAt: text('updated_at'),
+  },
+  (t) => [
+    index('idx_src_payment_ym_student').on(
+      t.baseYm,
+      t.studentNo
+    ),
+  ]
+);
+
 
 // ─────────────────────────────────────────────
 // Mock 원천: 기관계정 회계 시스템
