@@ -111,3 +111,24 @@ body {
 .account-ledger-expense {
   color: #f87171;
 }
+
+
+/* 대시보드 공통 카드 */
+.dashboard-card {
+  padding: 24px;
+  background: #1e293b;
+  border: 1px solid #334155;
+  border-radius: 12px;
+}
+
+.dashboard-card-top-26 {
+  margin-top: 26px;
+}
+
+.dashboard-card-top-24 {
+  margin-top: 24px;
+}
+
+.dashboard-card-scroll {
+  overflow-x: auto;
+}

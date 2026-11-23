@@ -21,12 +21,7 @@ type Props = {
 const money = (value: number) =>
   value.toLocaleString("ko-KR") + "원";
 
-const cardStyle = {
-  padding: 24,
-  background: "#1e293b",
-  border: "1px solid #334155",
-  borderRadius: 12,
-};
+
 
 
 function Metric({
@@ -358,10 +353,7 @@ export default async function HomePage({
       {tab === "roster" && (
         <>
           <section
-            style={{
-              ...cardStyle,
-              marginTop: 26,
-            }}
+            className="dashboard-card dashboard-card-top-26"
           >
             <h2 style={{ fontSize: 20 }}>
               {ym} 명부 요약
@@ -407,7 +399,7 @@ export default async function HomePage({
             >
               {[...degrees.entries()].map(
                 ([degree, count]) => (
-                  <div key={degree} style={cardStyle}>
+                  <div key={degree} className="dashboard-card">
                     <Metric
                       label={degree}
                       value={`${count}명`}
@@ -449,10 +441,7 @@ export default async function HomePage({
       {tab === "payments" && (
         <>
           <section
-            style={{
-              ...cardStyle,
-              marginTop: 26,
-            }}
+            className="dashboard-card dashboard-card-top-26"
           >
             <h2 style={{ fontSize: 20 }}>
               {ym} 지급 요약
@@ -493,7 +482,7 @@ export default async function HomePage({
               재원별 지급액 및 비중
             </h2>
 
-            <div style={{ ...cardStyle, overflowX: "auto" }}>
+            <div className="dashboard-card dashboard-card-scroll">
               <table
                 style={{
                   width: "100%",
@@ -563,10 +552,7 @@ export default async function HomePage({
       {tab === "accounts" && (
         <>
           <section
-            style={{
-              ...cardStyle,
-              marginTop: 26,
-            }}
+            className="dashboard-card dashboard-card-top-26"
           >
             <h2 style={{ fontSize: 20 }}>
               기관계정 전체 요약
@@ -617,10 +603,7 @@ export default async function HomePage({
             return (
               <section
                 key={item.accountId}
-                style={{
-                  ...cardStyle,
-                  marginTop: 24,
-                }}
+                className="dashboard-card dashboard-card-top-24"
               >
                 <h2 style={{ fontSize: 21 }}>
                   {item.accountId} 기관계정
