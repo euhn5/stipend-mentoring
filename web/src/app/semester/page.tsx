@@ -13,12 +13,6 @@ type Props = {
 const money = (value: number) =>
   value.toLocaleString("ko-KR");
 
-const cellStyle = {
-  padding: 12,
-  borderBottom: "1px solid #334155",
-  whiteSpace: "nowrap" as const,
-};
-
 export default async function SemesterPage({
   searchParams,
 }: Props) {
@@ -269,22 +263,22 @@ export default async function SemesterPage({
                   background: "#1e293b",
                 }}
               >
-                <th style={cellStyle}>학번</th>
-                <th style={cellStyle}>이름</th>
+                <th className="table-cell table-cell-nowrap">학번</th>
+                <th className="table-cell table-cell-nowrap">이름</th>
 
                 {semester.months.map((ym) => (
-                  <th key={ym} style={cellStyle}>
+                  <th key={ym} className="table-cell table-cell-nowrap">
                     {ym}
                   </th>
                 ))}
 
-                <th style={cellStyle}>
+                <th className="table-cell table-cell-nowrap">
                   {view === "payments"
                     ? "학기 총지급액"
                     : "부족 발생 월"}
                 </th>
 
-                <th style={cellStyle}>
+                <th className="table-cell table-cell-nowrap">
                   학기 부족금액
                 </th>
               </tr>
@@ -293,11 +287,11 @@ export default async function SemesterPage({
             <tbody>
               {semester.students.map((student) => (
                 <tr key={student.studentNo}>
-                  <td style={cellStyle}>
+                  <td className="table-cell table-cell-nowrap">
                     {student.studentNo}
                   </td>
 
-                  <td style={cellStyle}>
+                  <td className="table-cell table-cell-nowrap">
                     <Link
                       href={`/students/${student.studentNo}?ym=${semester.months[0]}&tab=payments`}
                       style={{
@@ -316,10 +310,8 @@ export default async function SemesterPage({
                       return (
                         <td
                           key={month.ym}
-                          style={{
-                            ...cellStyle,
-                            color: "#94a3b8",
-                          }}
+                          className="table-cell table-cell-nowrap"
+                          style={{ color: "#94a3b8" }}
                         >
                           -
                         </td>
@@ -330,7 +322,7 @@ export default async function SemesterPage({
                       return (
                         <td
                           key={month.ym}
-                          style={cellStyle}
+                          className="table-cell table-cell-nowrap"
                         >
                           <div>
                             {money(row.totalPaid)}
@@ -357,7 +349,7 @@ export default async function SemesterPage({
                     }
 
                     return (
-                      <td key={month.ym} style={cellStyle}>
+                      <td key={month.ym} className="table-cell table-cell-nowrap">
                         <strong
                           style={{
                             color:
@@ -389,15 +381,15 @@ export default async function SemesterPage({
                     );
                   })}
 
-                  <td style={cellStyle}>
+                  <td className="table-cell table-cell-nowrap">
                     {view === "payments"
                       ? money(student.totalPaid)
                       : `${student.shortageMonths}개월`}
                   </td>
 
                   <td
+                    className="table-cell table-cell-nowrap"
                     style={{
-                      ...cellStyle,
                       fontWeight: 700,
                       color:
                         student.totalShortage > 0
