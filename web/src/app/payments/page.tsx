@@ -1,3 +1,4 @@
+import { CheckCell, Status } from "@/components/CheckDisplay";
 import { formatWon } from "@/lib/format";
 import { normalizeYm } from "@/domain/month";
 import { redirect } from "next/navigation";
@@ -13,9 +14,6 @@ import type {
   PaymentRow,
 } from "@/queries/payments";
 
-import type {
-  CheckResult,
-} from "@/domain/checks";
 
 type SearchParams = {
   ym?: string;
@@ -32,83 +30,6 @@ const inputStyle = {
   background: "#0f172a",
   color: "#f8fafc",
 };
-
-function CheckCell({
-  label,
-  result,
-}: {
-  label: string;
-  result: CheckResult;
-}) {
-  if (result.ok) {
-    return (
-      <span style={{ color: "#4ade80" }}>
-        {label}: 일치
-      </span>
-    );
-  }
-
-  return (
-    <details>
-      <summary
-        style={{
-          color: "#f87171",
-          cursor: "pointer",
-          fontWeight: 600,
-          whiteSpace: "nowrap",
-        }}
-      >
-        {label}: 불일치
-      </summary>
-
-      <div
-        style={{
-          marginTop: 8,
-          padding: 12,
-          background: "#1e293b",
-          borderRadius: 8,
-          minWidth: 240,
-          fontSize: 12,
-          textAlign: "left",
-        }}
-      >
-        {result.note && (
-          <p style={{ marginBottom: 8 }}>
-            {result.note}
-          </p>
-        )}
-
-        {result.diffs.map((diff) => (
-          <div
-            key={diff.field}
-            style={{ marginBottom: 10 }}
-          >
-            <strong>재원/항목: {diff.field}</strong>
-            <div>
-              본 시스템: {String(diff.ours ?? "-")}
-            </div>
-            <div>
-              원천/기대값: {String(diff.source ?? "-")}
-            </div>
-          </div>
-        ))}
-      </div>
-    </details>
-  );
-}
-
-function Status({ value }: { value: string }) {
-  return (
-    <strong
-      style={{
-        color:
-          value === "O" ? "#4ade80" : "#f87171",
-      }}
-    >
-      {value}
-    </strong>
-  );
-}
 
 export default async function PaymentsPage({
   searchParams,
@@ -666,14 +587,14 @@ export default async function PaymentsPage({
 
                   <td className="table-cell table-cell-nowrap table-cell-right">
                     <CheckCell
-                      label="CHK-04"
+                      label="CHK-04" variant="payments"
                       result={row.chk04}
                     />
                   </td>
 
                   <td className="table-cell table-cell-nowrap table-cell-right">
                     <CheckCell
-                      label="CHK-05"
+                      label="CHK-05" variant="payments"
                       result={row.chk05}
                     />
                   </td>

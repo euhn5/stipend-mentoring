@@ -1,9 +1,9 @@
+import { CheckCell, Status } from "@/components/CheckDisplay";
 import { normalizeYm } from "@/domain/month";
 import { redirect } from "next/navigation";
 import { getSession } from "@/lib/session";
 import Link from "next/link";
 import { getRoster } from "@/queries/roster";
-import type { CheckResult } from "@/domain/checks";
 
 type SearchParams = {
   ym?: string;
@@ -15,70 +15,6 @@ type SearchParams = {
 };
 
 // CHK-01~03 일치 여부 표시
-function CheckCell({
-  label,
-  result,
-}: {
-  label: string;
-  result: CheckResult;
-}) {
-  if (result.ok) {
-    return (
-      <span style={{ color: "#4ade80" }}>
-        {label}: 일치
-      </span>
-    );
-  }
-
-  return (
-    <details>
-      <summary
-        style={{
-          color: "#f87171",
-          cursor: "pointer",
-          fontWeight: 600,
-        }}
-      >
-        {label}: 불일치
-      </summary>
-
-      <div
-        style={{
-          marginTop: 8,
-          padding: 10,
-          borderRadius: 6,
-          background: "#1e293b",
-          fontSize: 12,
-          minWidth: 230,
-        }}
-      >
-        {result.note && <p>{result.note}</p>}
-
-        {result.diffs.map((diff) => (
-          <div key={diff.field} style={{ marginTop: 6 }}>
-            <strong>{diff.field}</strong>
-            <div>본 시스템: {String(diff.ours ?? "-")}</div>
-            <div>원천/기대값: {String(diff.source ?? "-")}</div>
-          </div>
-        ))}
-      </div>
-    </details>
-  );
-}
-
-// O / X 색상 표시
-function Status({ value }: { value: string }) {
-  return (
-    <strong
-      style={{
-        color: value === "O" ? "#4ade80" : "#f87171",
-      }}
-    >
-      {value}
-    </strong>
-  );
-}
-
 export default async function RosterPage({
   searchParams,
 }: {
