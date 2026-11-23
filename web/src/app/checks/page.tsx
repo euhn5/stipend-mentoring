@@ -93,11 +93,6 @@ export default async function ChecksPage({
     padding: "10px 12px",
   };
 
-  const cellStyle = {
-    padding: 12,
-    borderBottom: "1px solid #334155",
-    verticalAlign: "top" as const,
-  };
 
   return (
     <main style={{ padding: 32, maxWidth: 1500, margin: "0 auto" }}>
@@ -332,7 +327,7 @@ export default async function ChecksPage({
                   "차이 및 메시지",
                   "상세",
                 ].map((heading) => (
-                  <th key={heading} style={cellStyle}>
+                  <th key={heading} className="table-cell table-cell-top">
                     {heading}
                   </th>
                 ))}
@@ -341,18 +336,18 @@ export default async function ChecksPage({
             <tbody>
               {rows.map((row, index) => (
                 <tr key={`${row.code}-${row.target}-${index}`}>
-                  <td style={cellStyle}>{row.code}</td>
-                  <td style={cellStyle}>
+                  <td className="table-cell table-cell-top">{row.code}</td>
+                  <td className="table-cell table-cell-top">
                     {CHECK_NAMES[row.code]}
                   </td>
-                  <td style={cellStyle}>{row.category}</td>
-                  <td style={cellStyle}>
+                  <td className="table-cell table-cell-top">{row.category}</td>
+                  <td className="table-cell table-cell-top">
                     <strong>{row.targetName}</strong>
                     <div style={{ color: "#94a3b8", fontSize: 12 }}>
                       {row.target}
                     </div>
                   </td>
-                  <td style={cellStyle}>
+                  <td className="table-cell table-cell-top">
                     <strong
                       style={{
                         color: row.result.ok
@@ -363,7 +358,7 @@ export default async function ChecksPage({
                       {row.result.ok ? "일치" : "불일치"}
                     </strong>
                   </td>
-                  <td style={cellStyle}>
+                  <td className="table-cell table-cell-top">
                     {row.result.note && (
                       <p style={{ marginBottom: 8, color: "#facc15" }}>
                         {row.result.note}
@@ -392,7 +387,7 @@ export default async function ChecksPage({
                       row.result.diffs.length === 0 &&
                       "-"}
                   </td>
-                  <td style={cellStyle}>
+                  <td className="table-cell table-cell-top">
                     <Link
                       href={row.detailUrl}
                       style={{
