@@ -25,18 +25,6 @@ type SearchParams = {
 const money = (value: number) =>
   value.toLocaleString("ko-KR");
 
-const cellStyle = {
-  padding: "12px",
-  borderBottom: "1px solid #334155",
-  whiteSpace: "nowrap" as const,
-  textAlign: "right" as const,
-};
-
-const textCellStyle = {
-  ...cellStyle,
-  textAlign: "left" as const,
-};
-
 const inputStyle = {
   padding: 10,
   border: "1px solid #475569",
@@ -575,10 +563,7 @@ export default async function PaymentsPage({
                 ].map((heading) => (
                   <th
                     key={heading}
-                    style={{
-                      ...cellStyle,
-                      textAlign: "right",
-                    }}
+                    className="table-cell table-cell-nowrap table-cell-right"
                   >
                     {heading}
                   </th>
@@ -591,11 +576,11 @@ export default async function PaymentsPage({
                 <tr
                   key={`${row.baseYm}-${row.studentNo}`}
                 >
-                  <td style={textCellStyle}>
+                  <td className="table-cell table-cell-nowrap text-left">
                     {row.studentNo}
                   </td>
 
-                  <td style={textCellStyle}>
+                  <td className="table-cell table-cell-nowrap text-left">
                     <Link
                       href={`/students/${encodeURIComponent(
                         row.studentNo
@@ -611,15 +596,15 @@ export default async function PaymentsPage({
                     </Link>
                   </td>
 
-                  <td style={textCellStyle}>
+                  <td className="table-cell table-cell-nowrap text-left">
                     {row.degree}
                   </td>
 
-                  <td style={textCellStyle}>
+                  <td className="table-cell table-cell-nowrap text-left">
                     {row.professorName || "-"}
                   </td>
 
-                  <td style={cellStyle}>
+                  <td className="table-cell table-cell-nowrap table-cell-right">
                     <Status value={row.overall} />
                   </td>
 
@@ -628,17 +613,15 @@ export default async function PaymentsPage({
                   ).map((code) => (
                     <td
                       key={code}
-                      style={cellStyle}
+                      className="table-cell table-cell-nowrap table-cell-right"
                     >
                       {money(row.fundAmounts[code])}
                     </td>
                   ))}
 
                   <td
-                    style={{
-                      ...cellStyle,
-                      fontWeight: 700,
-                    }}
+                    className="table-cell table-cell-nowrap table-cell-right"
+                    style={{ fontWeight: 700 }}
                   >
                     {money(row.integratedSubtotal)}
                   </td>
@@ -648,28 +631,26 @@ export default async function PaymentsPage({
                   ).map((code) => (
                     <td
                       key={code}
-                      style={cellStyle}
+                      className="table-cell table-cell-nowrap table-cell-right"
                     >
                       {money(row.fundAmounts[code])}
                     </td>
                   ))}
 
                   <td
-                    style={{
-                      ...cellStyle,
-                      fontWeight: 700,
-                    }}
+                    className="table-cell table-cell-nowrap table-cell-right"
+                    style={{ fontWeight: 700 }}
                   >
                     {money(row.totalPaid)}
                   </td>
 
-                  <td style={cellStyle}>
+                  <td className="table-cell table-cell-nowrap table-cell-right">
                     {row.standardAmount === null
                       ? "-"
                       : money(row.standardAmount)}
                   </td>
 
-                  <td style={cellStyle}>
+                  <td className="table-cell table-cell-nowrap table-cell-right">
                     {row.meets === null ? (
                       "-"
                     ) : (
@@ -677,20 +658,20 @@ export default async function PaymentsPage({
                     )}
                   </td>
 
-                  <td style={cellStyle}>
+                  <td className="table-cell table-cell-nowrap table-cell-right">
                     {row.shortageAmount === null
                       ? "-"
                       : money(row.shortageAmount)}
                   </td>
 
-                  <td style={cellStyle}>
+                  <td className="table-cell table-cell-nowrap table-cell-right">
                     <CheckCell
                       label="CHK-04"
                       result={row.chk04}
                     />
                   </td>
 
-                  <td style={cellStyle}>
+                  <td className="table-cell table-cell-nowrap table-cell-right">
                     <CheckCell
                       label="CHK-05"
                       result={row.chk05}
@@ -709,54 +690,54 @@ export default async function PaymentsPage({
                 >
                   <td
                     colSpan={5}
-                    style={textCellStyle}
+                    className="table-cell table-cell-nowrap text-left"
                   >
                     합계 ({rows.length}명)
                   </td>
 
-                  <td style={cellStyle}>
+                  <td className="table-cell table-cell-nowrap table-cell-right">
                     {money(fundTotals.F11)}
                   </td>
-                  <td style={cellStyle}>
+                  <td className="table-cell table-cell-nowrap table-cell-right">
                     {money(fundTotals.F12)}
                   </td>
-                  <td style={cellStyle}>
+                  <td className="table-cell table-cell-nowrap table-cell-right">
                     {money(fundTotals.F13)}
                   </td>
 
-                  <td style={cellStyle}>
+                  <td className="table-cell table-cell-nowrap table-cell-right">
                     {money(integratedTotal)}
                   </td>
 
-                  <td style={cellStyle}>
+                  <td className="table-cell table-cell-nowrap table-cell-right">
                     {money(fundTotals.F20)}
                   </td>
-                  <td style={cellStyle}>
+                  <td className="table-cell table-cell-nowrap table-cell-right">
                     {money(fundTotals.F30)}
                   </td>
-                  <td style={cellStyle}>
+                  <td className="table-cell table-cell-nowrap table-cell-right">
                     {money(fundTotals.F40)}
                   </td>
-                  <td style={cellStyle}>
+                  <td className="table-cell table-cell-nowrap table-cell-right">
                     {money(fundTotals.F90)}
                   </td>
 
-                  <td style={cellStyle}>
+                  <td className="table-cell table-cell-nowrap table-cell-right">
                     {money(totalPaid)}
                   </td>
 
-                  <td style={cellStyle}>
+                  <td className="table-cell table-cell-nowrap table-cell-right">
                     {money(standardTotal)}
                   </td>
 
-                  <td style={cellStyle}>-</td>
+                  <td className="table-cell table-cell-nowrap table-cell-right">-</td>
 
-                  <td style={cellStyle}>
+                  <td className="table-cell table-cell-nowrap table-cell-right">
                     {money(totalShortage)}
                   </td>
 
-                  <td style={cellStyle}>-</td>
-                  <td style={cellStyle}>-</td>
+                  <td className="table-cell table-cell-nowrap table-cell-right">-</td>
+                  <td className="table-cell table-cell-nowrap table-cell-right">-</td>
                 </tr>
               )}
 
