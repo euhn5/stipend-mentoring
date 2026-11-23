@@ -7,8 +7,11 @@ import { getSession } from "@/lib/session";
 import { db } from "@/db/client";
 import { auditLog } from "@/db/schema";
 import { addMonths, normalizeYm } from "@/domain/month";
-import { getRoster } from "@/queries/roster";
-import { FUND_CODES, getPayments } from "@/queries/payments";
+import { getRosterByStudentNo } from "@/queries/roster";
+import {
+  FUND_CODES,
+  getPaymentByStudentNo,
+} from "@/queries/payments";
 
 type StudentTab = "info" | "requirements" | "payments" | "history";
 
@@ -158,10 +161,7 @@ export default async function StudentPage({
   }
 
   // 학생 기본 정보 조회
-  const students = await getRoster({ ym });
-  const student = students.find(
-    (row) => row.studentNo === studentNo
-  );
+  const student = await getRosterByStudentNo(ym, studentNo);
 
   if (!student) {
     notFound();
@@ -188,19 +188,14 @@ export default async function StudentPage({
 
   // 지급 탭에서만 월별 지급내역 조회
   const paymentHistory =
-    tab === "payments"
-      ? await Promise.all(
-        paymentMonths.map(async (month) => {
-          const rows = await getPayments({ ym: month });
-
-          return {
-            ym: month,
-            payment:
-              rows.find((row) => row.studentNo === studentNo) ?? null,
-          };
-        })
+  tab === "payments"
+    ? await Promise.all(
+        paymentMonths.map(async (month) => ({
+          ym: month,
+          payment: await getPaymentByStudentNo(month, studentNo),
+        }))
       )
-      : [];
+    : [];
 
   const payment = paymentHistory[0]?.payment ?? null;
 

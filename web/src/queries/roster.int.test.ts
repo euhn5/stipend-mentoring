@@ -7,7 +7,7 @@ import { seedAll } from "@/db/seed";
 import { srcAcademicMonthly } from "@/db/schema";
 
 import { runAcadJob } from "@/jobs/acad";
-import { getRoster } from "./roster";
+import { getRoster, getRosterByStudentNo } from "./roster";
 
 describe("학생연구자 명부 조회", () => {
   beforeEach(async () => {
@@ -98,3 +98,35 @@ describe("학생연구자 명부 조회", () => {
     expect(updatedStudent?.chk03.ok).toBe(true);
   });
 });
+  it("단건 조회 결과가 전체 명부의 해당 학생과 일치한다", async () => {
+    const ym = "2026-03";
+    const studentNo = "2024210007";
+
+    await runAcadJob(ym, "MANUAL");
+
+    const rows = await getRoster({ ym });
+    const expected = rows.find(
+      (row) => row.studentNo === studentNo
+    );
+
+    const actual = await getRosterByStudentNo(
+      ym,
+      studentNo
+    );
+
+    expect(expected).toBeDefined();
+    expect(actual).toEqual(expected);
+  });
+
+  it("존재하지 않는 학생을 단건 조회하면 null을 반환한다", async () => {
+    const ym = "2026-03";
+
+    await runAcadJob(ym, "MANUAL");
+
+    const student = await getRosterByStudentNo(
+      ym,
+      "NOT-EXIST"
+    );
+
+    expect(student).toBeNull();
+  });

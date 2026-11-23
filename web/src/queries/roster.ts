@@ -1,5 +1,5 @@
 
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 
 import { db } from "@/db/client";
 import {
@@ -23,6 +23,7 @@ import { loadRules } from "@/lib/rules";
 // 명부 검색 조건
 export type RosterFilter = {
   ym: string;
+  studentNo?: string;
   degree?: string;
   dept?: string;
   advisor?: string;
@@ -65,6 +66,7 @@ const ACADEMIC_FIELDS = [
   "activityType",
 ] as const;
 
+// CHK-01 학적 비교용 값
 function academicValues(
   row: Student | typeof srcAcademicMonthly.$inferSelect
 ) {
@@ -87,6 +89,7 @@ function academicValues(
  * - 학생 학적 + 지원요건 + 지도교수
  * - CHK-01, CHK-02, CHK-03
  * - 검색 필터 적용
+ * - studentNo가 있으면 해당 학생만 DB 조회
  */
 export async function getRoster(
   filter: RosterFilter
@@ -97,28 +100,58 @@ export async function getRoster(
   const students = await db
     .select()
     .from(studentMonthly)
-    .where(eq(studentMonthly.baseYm, filter.ym));
+    .where(
+      and(
+        eq(studentMonthly.baseYm, filter.ym),
+        filter.studentNo
+          ? eq(studentMonthly.studentNo, filter.studentNo)
+          : undefined
+      )
+    );
 
   // 2. 같은 월의 지원요건 판정
   const results = await db
     .select()
     .from(eligibilityResult)
-    .where(eq(eligibilityResult.baseYm, filter.ym));
+    .where(
+      and(
+        eq(eligibilityResult.baseYm, filter.ym),
+        filter.studentNo
+          ? eq(eligibilityResult.studentNo, filter.studentNo)
+          : undefined
+      )
+    );
 
   // 3. 교수 목록과 현재 원천 학적
-  const professors = await db.select().from(professor);
+  const professors = await db
+    .select()
+    .from(professor);
 
   const sources = await db
     .select()
     .from(srcAcademicMonthly)
-    .where(eq(srcAcademicMonthly.baseYm, filter.ym));
+    .where(
+      and(
+        eq(srcAcademicMonthly.baseYm, filter.ym),
+        filter.studentNo
+          ? eq(srcAcademicMonthly.studentNo, filter.studentNo)
+          : undefined
+      )
+    );
 
   // 4. 현재 원천 연구활동 이력
+  // 누적 지원개월 계산에 과거 이력이 필요하므로
+  // 월은 제한하지 않고 학생번호만 제한한다.
   const histories = await db
     .select()
-    .from(srcResearchHistory);
+    .from(srcResearchHistory)
+    .where(
+      filter.studentNo
+        ? eq(srcResearchHistory.studentNo, filter.studentNo)
+        : undefined
+    );
 
-  // 빠른 검색을 위한 Map
+  // 5. 조회 결과를 Map으로 정리
   const resultMap = new Map(
     results.map((r) => [r.studentNo, r])
   );
@@ -133,14 +166,16 @@ export async function getRoster(
       .map((s) => [s.studentNo!, s])
   );
 
-  // 5. 학생별 연구활동 이력을 한 번만 분류
+  // 학생별 연구활동 이력을 한 번만 분류
   const historyMap = new Map<
     string,
     { ym: string; activityType: string }[]
   >();
 
   for (const h of histories) {
-    if (h.ym === null || h.studentNo === null) continue;
+    if (h.ym === null || h.studentNo === null) {
+      continue;
+    }
 
     const history = historyMap.get(h.studentNo) ?? [];
 
@@ -159,20 +194,22 @@ export async function getRoster(
     const result: Eligibility | undefined =
       resultMap.get(student.studentNo);
 
-    // 판정 결과가 없다면 표시할 수 없으므로 제외
-    if (!result) continue;
+    // 지원요건 판정 결과가 없다면 제외
+    if (!result) {
+      continue;
+    }
 
     const prof = professorMap.get(student.advisorId);
     const source = sourceMap.get(student.studentNo);
 
-    // CHK-01: 학적 스냅샷 vs 원천 학적
+    // CHK-01: 학적 스냅샷과 원천 학적 비교
     const chk01 = diffFields(
       academicValues(student),
       source ? academicValues(source) : null,
       [...ACADEMIC_FIELDS]
     );
 
-    // CHK-02: 종합결과 vs 세부요건 AND
+    // CHK-02: 종합결과와 세부요건 AND 비교
     const expectedOverall =
       result.r1Status === "O" &&
       result.r2Fulltime === "O" &&
@@ -197,9 +234,7 @@ export async function getRoster(
         note: "원천에 없음",
       };
     } else {
-      // 변경된 부분:
-      // 전체 이력을 다시 검색하지 않고
-      // 해당 학생의 이력만 Map에서 가져온다.
+      // 해당 학생의 연구활동 이력만 가져온다.
       const history =
         historyMap.get(student.studentNo) ?? [];
 
@@ -271,11 +306,17 @@ export async function getRoster(
 
   return rows
     .filter((row) => {
-      if (filter.degree && row.degree !== filter.degree) {
+      if (
+        filter.degree &&
+        row.degree !== filter.degree
+      ) {
         return false;
       }
 
-      if (filter.dept && row.dept !== filter.dept) {
+      if (
+        filter.dept &&
+        row.dept !== filter.dept
+      ) {
         return false;
       }
 
@@ -306,4 +347,20 @@ export async function getRoster(
     .sort((a, b) =>
       a.studentNo.localeCompare(b.studentNo)
     );
+}
+
+/**
+ * 학생 상세 화면을 위한 단건 명부 조회
+ * 기존 CHK-01~03 판정 로직을 재사용한다.
+ */
+export async function getRosterByStudentNo(
+  ym: string,
+  studentNo: string
+): Promise<RosterRow | null> {
+  const rows = await getRoster({
+    ym,
+    studentNo,
+  });
+
+  return rows[0] ?? null;
 }

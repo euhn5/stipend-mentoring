@@ -8,7 +8,10 @@ import { srcPayment } from "@/db/schema";
 
 import { runAcadJob } from "@/jobs/acad";
 import { runPayJob } from "@/jobs/pay";
-import { getPayments } from "./payments";
+import {
+  getPayments,
+  getPaymentByStudentNo,
+} from "./payments";
 
 describe("학생지원금 지급내역 조회", () => {
   beforeEach(async () => {
@@ -155,3 +158,47 @@ describe("학생지원금 지급내역 조회", () => {
     expect(s09After?.chk05.ok).toBe(true);
   });
 });
+
+  it("단건 지급내역이 전체 조회의 해당 학생과 일치한다", async () => {
+    const ym = "2026-03";
+    const studentNo = "2026110010";
+
+    await runAcadJob(ym, "MANUAL");
+    await runPayJob(ym, "MANUAL");
+
+    const rows = await getPayments({ ym });
+    const expected = rows.find(
+      (row) => row.studentNo === studentNo
+    );
+
+    const actual = await getPaymentByStudentNo(
+      ym,
+      studentNo
+    );
+
+    expect(expected).toBeDefined();
+    expect(actual).toEqual(expected);
+
+    // 원천에만 존재하는 F99 재원도 동일하게 감지해야 함
+    expect(actual?.chk04.ok).toBe(true);
+    expect(actual?.chk05.ok).toBe(false);
+    expect(actual?.chk05.diffs).toContainEqual({
+      field: "F99",
+      ours: 0,
+      source: 50_000,
+    });
+  });
+
+  it("존재하지 않는 학생의 지급내역은 null을 반환한다", async () => {
+    const ym = "2026-03";
+
+    await runAcadJob(ym, "MANUAL");
+    await runPayJob(ym, "MANUAL");
+
+    const payment = await getPaymentByStudentNo(
+      ym,
+      "NOT-EXIST"
+    );
+
+    expect(payment).toBeNull();
+  });

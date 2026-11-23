@@ -1,5 +1,5 @@
 
-import { eq, sql } from "drizzle-orm";
+import { and, eq, sql } from "drizzle-orm";
 
 import { db } from "@/db/client";
 import {
@@ -34,6 +34,7 @@ type RosterRow =
 
 export type PaymentFilter = {
   ym: string;
+  studentNo?: string;
   advisor?: string;
   meets?: "O" | "X";
   q?: string;
@@ -85,7 +86,10 @@ export async function getPayments(
   const ym = filter.ym;
 
   // 1. 기준월의 학생 및 지원요건 정보
-  const students = await getRoster({ ym });
+  const students = await getRoster({
+    ym,
+    studentNo: filter.studentNo,
+  });
 
   // 2. 본 시스템의 학생×재원별 지급 합계
   const fundTotals = await db
@@ -97,7 +101,14 @@ export async function getPayments(
       `,
     })
     .from(payment)
-    .where(eq(payment.baseYm, ym))
+    .where(
+      and(
+        eq(payment.baseYm, ym),
+        filter.studentNo
+          ? eq(payment.studentNo, filter.studentNo)
+          : undefined
+      )
+    )
     .groupBy(
       payment.studentNo,
       payment.fundCode
@@ -112,14 +123,28 @@ export async function getPayments(
       `,
     })
     .from(payment)
-    .where(eq(payment.baseYm, ym))
+    .where(
+      and(
+        eq(payment.baseYm, ym),
+        filter.studentNo
+          ? eq(payment.studentNo, filter.studentNo)
+          : undefined
+      )
+    )
     .groupBy(payment.studentNo);
 
   // 4. 원천 지급 데이터 조회
   const sourceRows = await db
-    .select()
-    .from(srcPayment)
-    .where(eq(srcPayment.baseYm, ym));
+  .select()
+  .from(srcPayment)
+  .where(
+    and(
+      eq(srcPayment.baseYm, ym),
+      filter.studentNo
+        ? eq(srcPayment.studentNo, filter.studentNo)
+        : undefined
+    )
+  );
 
   // 5. 재원별 금액을 Map에 정리
   const fundMap = new Map<string, number>();
@@ -310,4 +335,16 @@ export async function getPayments(
     .sort((a, b) =>
       a.studentNo.localeCompare(b.studentNo)
     );
+}
+
+/**
+ * 학생 상세 화면용 월별 지급내역 단건 조회
+ * 기존 CHK-04~05 계산을 재사용한다.
+ */
+export async function getPaymentByStudentNo(
+  ym: string,
+  studentNo: string
+): Promise<PaymentRow | null> {
+  const rows = await getPayments({ ym, studentNo });
+  return rows[0] ?? null;
 }
