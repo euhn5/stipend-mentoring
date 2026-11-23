@@ -50,3 +50,21 @@ body {
 .table-cell-wide {
   padding: 14px;
 }
+
+
+/* 학생 상세 페이지 공통 카드 */
+.student-detail-card {
+  background: #1e293b;
+  border-radius: 10px;
+  padding: 24px;
+  margin-top: 24px;
+}
+
+/* 학생 상세 페이지 정보 행 */
+.student-detail-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 12px 0;
+  border-bottom: 1px solid #334155;
+}

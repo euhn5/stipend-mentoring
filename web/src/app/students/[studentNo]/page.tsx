@@ -20,19 +20,7 @@ type Props = {
   searchParams: Promise<{ ym?: string; tab?: string }>;
 };
 
-const cardStyle = {
-  background: "#1e293b",
-  borderRadius: 10,
-  padding: 24,
-};
 
-const rowStyle = {
-  display: "flex",
-  justifyContent: "space-between",
-  gap: 16,
-  padding: "12px 0",
-  borderBottom: "1px solid #334155",
-};
 
 const money = (value: number) =>
   `${value.toLocaleString("ko-KR")}원`;
@@ -81,7 +69,7 @@ function InfoRow({
   value: string | number | null;
 }) {
   return (
-    <div style={rowStyle}>
+    <div className="student-detail-row">
       <span style={{ color: "#94a3b8" }}>{label}</span>
       <strong>{value ?? "-"}</strong>
     </div>
@@ -98,7 +86,7 @@ function RequirementRow({
   description: string;
 }) {
   return (
-    <div style={rowStyle}>
+    <div className="student-detail-row">
       <div>
         <strong>{label}</strong>
         <p style={{ color: "#94a3b8", fontSize: 13, marginTop: 4 }}>
@@ -283,7 +271,7 @@ export default async function StudentPage({
       </p>
 
       {/* 학생 기본 정보 */}
-      <section style={{ ...cardStyle, marginTop: 24 }}>
+      <section className="student-detail-card">
         <h2 style={{ fontSize: 20, fontWeight: 600 }}>
           학생 기본 정보
         </h2>
@@ -340,7 +328,7 @@ export default async function StudentPage({
 
       {/* 학적 탭 */}
       {tab === "info" && (
-        <section style={{ ...cardStyle, marginTop: 24 }}>
+        <section className="student-detail-card">
           <h2 style={{ fontSize: 20, fontWeight: 600 }}>
             학적 정보
           </h2>
@@ -358,7 +346,7 @@ export default async function StudentPage({
 
       {/* 지원요건 탭 */}
       {tab === "requirements" && (
-        <section style={{ ...cardStyle, marginTop: 24 }}>
+        <section className="student-detail-card">
           <h2 style={{ fontSize: 20, fontWeight: 600 }}>
             지원요건 판정
           </h2>
@@ -411,7 +399,7 @@ export default async function StudentPage({
 
       {/* 지급 탭 */}
       {tab === "payments" && (
-        <section style={{ ...cardStyle, marginTop: 24 }}>
+        <section className="student-detail-card">
           <h2 style={{ fontSize: 20, fontWeight: 600 }}>
             {ym} 지급내역
           </h2>
@@ -740,7 +728,7 @@ export default async function StudentPage({
 
       {/* 변경 이력 탭 */}
       {tab === "history" && (
-        <section style={{ ...cardStyle, marginTop: 24 }}>
+        <section className="student-detail-card">
           <h2 style={{ fontSize: 20, fontWeight: 600 }}>
             학생 데이터 변경 이력
           </h2>
