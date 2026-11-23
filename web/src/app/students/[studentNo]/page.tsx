@@ -1,5 +1,5 @@
 
-import { maskResearcherNo } from "@/lib/format";
+import { maskResearcherNo, formatWonWithUnit } from "@/lib/format";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { and, desc, eq, like, or } from "drizzle-orm";
@@ -22,8 +22,6 @@ type Props = {
 
 
 
-const money = (value: number) =>
-  `${value.toLocaleString("ko-KR")}원`;
 
 function TabLink({
   label,
@@ -390,7 +388,7 @@ export default async function StudentPage({
               value={
                 student.standardAmount === null
                   ? "-"
-                  : money(student.standardAmount)
+                  : formatWonWithUnit(student.standardAmount)
               }
             />
           </div>
@@ -413,14 +411,14 @@ export default async function StudentPage({
               <div style={{ marginTop: 16 }}>
                 <InfoRow
                   label="총지급액"
-                  value={money(payment.totalPaid)}
+                  value={formatWonWithUnit(payment.totalPaid)}
                 />
                 <InfoRow
                   label="기준금액"
                   value={
                     payment.standardAmount === null
                       ? "-"
-                      : money(payment.standardAmount)
+                      : formatWonWithUnit(payment.standardAmount)
                   }
                 />
                 <InfoRow
@@ -432,7 +430,7 @@ export default async function StudentPage({
                   value={
                     payment.shortageAmount === null
                       ? "-"
-                      : money(payment.shortageAmount)
+                      : formatWonWithUnit(payment.shortageAmount)
                   }
                 />
               </div>
@@ -451,13 +449,13 @@ export default async function StudentPage({
                 <InfoRow
                   key={code}
                   label={code}
-                  value={money(payment.fundAmounts[code])}
+                  value={formatWonWithUnit(payment.fundAmounts[code])}
                 />
               ))}
 
               <InfoRow
                 label="통합관리 소계 (F11+F12+F13)"
-                value={money(payment.integratedSubtotal)}
+                value={formatWonWithUnit(payment.integratedSubtotal)}
               />
 
               {/* 정합성 검사 */}
@@ -507,10 +505,10 @@ export default async function StudentPage({
                       >
                         <strong>재원 {diff.field}</strong>
                         <p>
-                          본 시스템: {money(Number(diff.ours))}
+                          본 시스템: {formatWonWithUnit(Number(diff.ours))}
                         </p>
                         <p>
-                          원천 데이터: {money(Number(diff.source))}
+                          원천 데이터: {formatWonWithUnit(Number(diff.source))}
                         </p>
                       </div>
                     ))}
@@ -614,12 +612,12 @@ export default async function StudentPage({
                             <>
                               {FUND_CODES.map((code) => (
                                 <td key={code} style={{ padding: 12 }}>
-                                  {money(row.fundAmounts[code])}
+                                  {formatWonWithUnit(row.fundAmounts[code])}
                                 </td>
                               ))}
 
                               <td style={{ padding: 12 }}>
-                                {money(row.integratedSubtotal)}
+                                {formatWonWithUnit(row.integratedSubtotal)}
                               </td>
 
                               <td
@@ -628,13 +626,13 @@ export default async function StudentPage({
                                   fontWeight: 700,
                                 }}
                               >
-                                {money(row.totalPaid)}
+                                {formatWonWithUnit(row.totalPaid)}
                               </td>
 
                               <td style={{ padding: 12 }}>
                                 {row.standardAmount === null
                                   ? "-"
-                                  : money(row.standardAmount)}
+                                  : formatWonWithUnit(row.standardAmount)}
                               </td>
 
                               <td
@@ -655,7 +653,7 @@ export default async function StudentPage({
                               <td style={{ padding: 12 }}>
                                 {row.shortageAmount === null
                                   ? "-"
-                                  : money(row.shortageAmount)}
+                                  : formatWonWithUnit(row.shortageAmount)}
                               </td>
                             </>
                           ) : (
@@ -690,20 +688,20 @@ export default async function StudentPage({
 
                         {FUND_CODES.map((code) => (
                           <td key={code} style={{ padding: 12 }}>
-                            {money(sixMonthFundTotals[code])}
+                            {formatWonWithUnit(sixMonthFundTotals[code])}
                           </td>
                         ))}
 
                         <td style={{ padding: 12 }}>
-                          {money(sixMonthIntegratedTotal)}
+                          {formatWonWithUnit(sixMonthIntegratedTotal)}
                         </td>
 
                         <td style={{ padding: 12 }}>
-                          {money(sixMonthTotal)}
+                          {formatWonWithUnit(sixMonthTotal)}
                         </td>
 
                         <td style={{ padding: 12 }}>
-                          {money(sixMonthStandardTotal)}
+                          {formatWonWithUnit(sixMonthStandardTotal)}
                         </td>
 
                         <td style={{ padding: 12 }}>-</td>
@@ -714,7 +712,7 @@ export default async function StudentPage({
                             color: "#f87171",
                           }}
                         >
-                          {money(sixMonthShortage)}
+                          {formatWonWithUnit(sixMonthShortage)}
                         </td>
                       </tr>
                     </tfoot>

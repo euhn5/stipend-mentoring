@@ -1,3 +1,4 @@
+import { formatWonWithUnit } from "@/lib/format";
 import { normalizeYm } from "@/domain/month";
 import Link from "next/link";
 
@@ -11,8 +12,6 @@ type Props = {
   }>;
 };
 
-const formatMoney = (amount: number) =>
-  amount.toLocaleString("ko-KR") + "원";
 
 const inputStyle = {
   padding: "10px 12px",
@@ -226,7 +225,7 @@ export default async function PaymentPlanPage({
               입력된 계획금액 합계
             </p>
             <strong style={{ fontSize: 25 }}>
-              {formatMoney(totalPlanned)}
+              {formatWonWithUnit(totalPlanned)}
             </strong>
           </div>
 
@@ -235,7 +234,7 @@ export default async function PaymentPlanPage({
               실제 지급액
             </p>
             <strong style={{ fontSize: 25 }}>
-              {formatMoney(totalActual)}
+              {formatWonWithUnit(totalActual)}
             </strong>
           </div>
 
@@ -254,7 +253,7 @@ export default async function PaymentPlanPage({
               }}
             >
               {allPlanned
-                ? formatMoney(difference)
+                ? formatWonWithUnit(difference)
                 : "계획 입력 미완료"}
             </strong>
           </div>
@@ -363,7 +362,7 @@ export default async function PaymentPlanPage({
                     </td>
 
                     <td className="table-cell table-cell-nowrap">
-                      {formatMoney(row.actualAmount)}
+                      {formatWonWithUnit(row.actualAmount)}
                     </td>
 
                     <td
@@ -382,7 +381,7 @@ export default async function PaymentPlanPage({
                     >
                       {row.difference === null
                         ? "-"
-                        : formatMoney(row.difference)}
+                        : formatWonWithUnit(row.difference)}
                     </td>
 
                     <td className="table-cell table-cell-nowrap">

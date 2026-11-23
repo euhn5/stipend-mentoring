@@ -1,3 +1,4 @@
+import { formatWon } from "@/lib/format";
 
 import Link from "next/link";
 
@@ -10,8 +11,6 @@ type Props = {
   }>;
 };
 
-const money = (value: number) =>
-  value.toLocaleString("ko-KR");
 
 export default async function SemesterPage({
   searchParams,
@@ -154,7 +153,7 @@ export default async function SemesterPage({
               학기 총지급액
             </p>
             <strong style={{ fontSize: 26 }}>
-              {money(semester.totalPaid)}원
+              {formatWon(semester.totalPaid)}원
             </strong>
           </div>
 
@@ -168,7 +167,7 @@ export default async function SemesterPage({
                 color: "#f87171",
               }}
             >
-              {money(semester.totalShortage)}원
+              {formatWon(semester.totalShortage)}원
             </strong>
           </div>
         </div>
@@ -325,7 +324,7 @@ export default async function SemesterPage({
                           className="table-cell table-cell-nowrap"
                         >
                           <div>
-                            {money(row.totalPaid)}
+                            {formatWon(row.totalPaid)}
                           </div>
 
                           <div
@@ -342,7 +341,7 @@ export default async function SemesterPage({
                             부족:{" "}
                             {row.shortageAmount === null
                               ? "-"
-                              : money(row.shortageAmount)}
+                              : formatWon(row.shortageAmount)}
                           </div>
                         </td>
                       );
@@ -375,7 +374,7 @@ export default async function SemesterPage({
                           부족:{" "}
                           {row.shortageAmount === null
                             ? "-"
-                            : money(row.shortageAmount)}
+                            : formatWon(row.shortageAmount)}
                         </div>
                       </td>
                     );
@@ -383,7 +382,7 @@ export default async function SemesterPage({
 
                   <td className="table-cell table-cell-nowrap">
                     {view === "payments"
-                      ? money(student.totalPaid)
+                      ? formatWon(student.totalPaid)
                       : `${student.shortageMonths}개월`}
                   </td>
 
@@ -397,7 +396,7 @@ export default async function SemesterPage({
                           : "#4ade80",
                     }}
                   >
-                    {money(student.totalShortage)}
+                    {formatWon(student.totalShortage)}
                   </td>
                 </tr>
               ))}

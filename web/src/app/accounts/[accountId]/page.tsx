@@ -1,3 +1,4 @@
+import { formatWonWithUnit } from "@/lib/format";
 import AccountSwitcher from "./AccountSwitcher";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -21,8 +22,6 @@ type Props = {
   }>;
 };
 
-const money = (n: number) =>
-  n.toLocaleString("ko-KR") + "원";
 
 
 
@@ -296,7 +295,7 @@ export default async function AccountPage({
                 {label}
               </div>
               <strong style={{ fontSize: 22 }}>
-                {money(Number(amount))}
+                {formatWonWithUnit(Number(amount))}
               </strong>
             </div>
           ))}
@@ -354,9 +353,9 @@ export default async function AccountPage({
               {summary.sources.map((row) => (
                 <tr key={row.sourceItem}>
                   <td className="account-ledger-td">{row.sourceItem}</td>
-                  <td className="account-ledger-td">{money(row.inTotal)}</td>
-                  <td className="account-ledger-td">{money(row.outTotal)}</td>
-                  <td className="account-ledger-td">{money(row.balance)}</td>
+                  <td className="account-ledger-td">{formatWonWithUnit(row.inTotal)}</td>
+                  <td className="account-ledger-td">{formatWonWithUnit(row.outTotal)}</td>
+                  <td className="account-ledger-td">{formatWonWithUnit(row.balance)}</td>
                   <td className="account-ledger-td">
                     <CheckStatus
                       label="CHK-06"
@@ -428,7 +427,7 @@ export default async function AccountPage({
                   <td className="account-ledger-td">-</td>
                   <td className="account-ledger-td">-</td>
                   <td className="account-ledger-td account-ledger-td-bold">
-                    {money(row.balance)}
+                    {formatWonWithUnit(row.balance)}
                   </td>
                   <td className="account-ledger-td">조회 시작일 전 누적</td>
                 </tr>
@@ -446,16 +445,16 @@ export default async function AccountPage({
                   <td className="account-ledger-td">{row.sourceItem}</td>
                   <td className="account-ledger-td">
                     {row.direction === "IN"
-                      ? money(row.amount)
+                      ? formatWonWithUnit(row.amount)
                       : "-"}
                   </td>
                   <td className="account-ledger-td">
                     {row.direction === "OUT"
-                      ? money(row.amount)
+                      ? formatWonWithUnit(row.amount)
                       : "-"}
                   </td>
                   <td className="account-ledger-td account-ledger-td-bold">
-                    {money(row.balance)}
+                    {formatWonWithUnit(row.balance)}
                   </td>
                   <td className="account-ledger-td">{row.memo ?? "-"}</td>
                 </tr>

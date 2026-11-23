@@ -1,3 +1,4 @@
+import { formatWonWithUnit } from "@/lib/format";
 import { normalizeYm } from "@/domain/month";
 import Link from "next/link";
 import { redirect } from "next/navigation";
@@ -18,8 +19,6 @@ type Props = {
   }>;
 };
 
-const money = (value: number) =>
-  value.toLocaleString("ko-KR") + "원";
 
 
 
@@ -457,7 +456,7 @@ export default async function HomePage({
             >
               <Metric
                 label="총지급액"
-                value={money(totalPaid)}
+                value={formatWonWithUnit(totalPaid)}
               />
               <Metric
                 label="부족 학생"
@@ -466,7 +465,7 @@ export default async function HomePage({
               />
               <Metric
                 label="부족금액 합계"
-                value={money(totalShortage)}
+                value={formatWonWithUnit(totalShortage)}
                 color="#f87171"
               />
             </div>
@@ -503,7 +502,7 @@ export default async function HomePage({
                       <td className="table-cell">{row.code}</td>
 
                       <td className="table-cell">
-                        {money(row.amount)}
+                        {formatWonWithUnit(row.amount)}
                       </td>
 
                       <td className="table-cell">
@@ -568,15 +567,15 @@ export default async function HomePage({
             >
               <Metric
                 label="수입총액"
-                value={money(accountIncome)}
+                value={formatWonWithUnit(accountIncome)}
               />
               <Metric
                 label="지급총액"
-                value={money(accountExpense)}
+                value={formatWonWithUnit(accountExpense)}
               />
               <Metric
                 label="잔액총액"
-                value={money(accountBalance)}
+                value={formatWonWithUnit(accountBalance)}
               />
             </div>
           </section>
@@ -629,15 +628,15 @@ export default async function HomePage({
                 >
                   <Metric
                     label="수입"
-                    value={money(item.totalIncome)}
+                    value={formatWonWithUnit(item.totalIncome)}
                   />
                   <Metric
                     label="지급"
-                    value={money(item.totalExpense)}
+                    value={formatWonWithUnit(item.totalExpense)}
                   />
                   <Metric
                     label="잔액"
-                    value={money(item.totalBalance)}
+                    value={formatWonWithUnit(item.totalBalance)}
                   />
                 </div>
 

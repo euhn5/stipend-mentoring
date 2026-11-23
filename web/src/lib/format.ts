@@ -7,6 +7,18 @@ export function formatWon(value: number | null | undefined): string {
   return value.toLocaleString("ko-KR");
 }
 
+
+export function formatWonWithUnit(
+  value: number | null | undefined
+): string {
+  if (value === null || value === undefined) {
+    return "-";
+  }
+
+  return `${formatWon(value)}원`;
+}
+
+
 export function formatOX(value: "O" | "X" | null | undefined): string {
   return value ?? "-";
 }

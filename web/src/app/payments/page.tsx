@@ -1,3 +1,4 @@
+import { formatWon } from "@/lib/format";
 import { normalizeYm } from "@/domain/month";
 import { redirect } from "next/navigation";
 import { getSession } from "@/lib/session";
@@ -23,8 +24,6 @@ type SearchParams = {
   q?: string;
 };
 
-const money = (value: number) =>
-  value.toLocaleString("ko-KR");
 
 const inputStyle = {
   padding: 10,
@@ -436,7 +435,7 @@ export default async function PaymentsPage({
               총지급액
             </div>
             <strong style={{ fontSize: 24 }}>
-              {money(totalPaid)}원
+              {formatWon(totalPaid)}원
             </strong>
           </div>
 
@@ -464,7 +463,7 @@ export default async function PaymentsPage({
                 color: "#f87171",
               }}
             >
-              {money(totalShortage)}원
+              {formatWon(totalShortage)}원
             </strong>
           </div>
 
@@ -616,7 +615,7 @@ export default async function PaymentsPage({
                       key={code}
                       className="table-cell table-cell-nowrap table-cell-right"
                     >
-                      {money(row.fundAmounts[code])}
+                      {formatWon(row.fundAmounts[code])}
                     </td>
                   ))}
 
@@ -624,7 +623,7 @@ export default async function PaymentsPage({
                     className="table-cell table-cell-nowrap table-cell-right"
                     style={{ fontWeight: 700 }}
                   >
-                    {money(row.integratedSubtotal)}
+                    {formatWon(row.integratedSubtotal)}
                   </td>
 
                   {(
@@ -634,7 +633,7 @@ export default async function PaymentsPage({
                       key={code}
                       className="table-cell table-cell-nowrap table-cell-right"
                     >
-                      {money(row.fundAmounts[code])}
+                      {formatWon(row.fundAmounts[code])}
                     </td>
                   ))}
 
@@ -642,13 +641,13 @@ export default async function PaymentsPage({
                     className="table-cell table-cell-nowrap table-cell-right"
                     style={{ fontWeight: 700 }}
                   >
-                    {money(row.totalPaid)}
+                    {formatWon(row.totalPaid)}
                   </td>
 
                   <td className="table-cell table-cell-nowrap table-cell-right">
                     {row.standardAmount === null
                       ? "-"
-                      : money(row.standardAmount)}
+                      : formatWon(row.standardAmount)}
                   </td>
 
                   <td className="table-cell table-cell-nowrap table-cell-right">
@@ -662,7 +661,7 @@ export default async function PaymentsPage({
                   <td className="table-cell table-cell-nowrap table-cell-right">
                     {row.shortageAmount === null
                       ? "-"
-                      : money(row.shortageAmount)}
+                      : formatWon(row.shortageAmount)}
                   </td>
 
                   <td className="table-cell table-cell-nowrap table-cell-right">
@@ -697,44 +696,44 @@ export default async function PaymentsPage({
                   </td>
 
                   <td className="table-cell table-cell-nowrap table-cell-right">
-                    {money(fundTotals.F11)}
+                    {formatWon(fundTotals.F11)}
                   </td>
                   <td className="table-cell table-cell-nowrap table-cell-right">
-                    {money(fundTotals.F12)}
+                    {formatWon(fundTotals.F12)}
                   </td>
                   <td className="table-cell table-cell-nowrap table-cell-right">
-                    {money(fundTotals.F13)}
-                  </td>
-
-                  <td className="table-cell table-cell-nowrap table-cell-right">
-                    {money(integratedTotal)}
+                    {formatWon(fundTotals.F13)}
                   </td>
 
                   <td className="table-cell table-cell-nowrap table-cell-right">
-                    {money(fundTotals.F20)}
-                  </td>
-                  <td className="table-cell table-cell-nowrap table-cell-right">
-                    {money(fundTotals.F30)}
-                  </td>
-                  <td className="table-cell table-cell-nowrap table-cell-right">
-                    {money(fundTotals.F40)}
-                  </td>
-                  <td className="table-cell table-cell-nowrap table-cell-right">
-                    {money(fundTotals.F90)}
+                    {formatWon(integratedTotal)}
                   </td>
 
                   <td className="table-cell table-cell-nowrap table-cell-right">
-                    {money(totalPaid)}
+                    {formatWon(fundTotals.F20)}
+                  </td>
+                  <td className="table-cell table-cell-nowrap table-cell-right">
+                    {formatWon(fundTotals.F30)}
+                  </td>
+                  <td className="table-cell table-cell-nowrap table-cell-right">
+                    {formatWon(fundTotals.F40)}
+                  </td>
+                  <td className="table-cell table-cell-nowrap table-cell-right">
+                    {formatWon(fundTotals.F90)}
                   </td>
 
                   <td className="table-cell table-cell-nowrap table-cell-right">
-                    {money(standardTotal)}
+                    {formatWon(totalPaid)}
+                  </td>
+
+                  <td className="table-cell table-cell-nowrap table-cell-right">
+                    {formatWon(standardTotal)}
                   </td>
 
                   <td className="table-cell table-cell-nowrap table-cell-right">-</td>
 
                   <td className="table-cell table-cell-nowrap table-cell-right">
-                    {money(totalShortage)}
+                    {formatWon(totalShortage)}
                   </td>
 
                   <td className="table-cell table-cell-nowrap table-cell-right">-</td>

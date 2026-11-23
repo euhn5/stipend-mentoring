@@ -1,5 +1,5 @@
 import { normalizeYm } from "@/domain/month";
-import { maskResearcherNo } from "@/lib/format";
+import { maskResearcherNo, formatWonWithUnit } from "@/lib/format";
 import Link from "next/link";
 import { db } from "@/db/client";
 import { professor } from "@/db/schema";
@@ -13,8 +13,6 @@ type SearchParams = {
   view?: string;
 };
 
-const money = (value: number) =>
-  `${value.toLocaleString("ko-KR")}원`;
 
 export default async function ProfessorsPage({
   searchParams,
@@ -315,7 +313,7 @@ export default async function ProfessorsPage({
               참여학생: <strong>{totalStudents}명</strong>
             </div>
             <div>
-              총지급액: <strong>{money(totalPaid)}</strong>
+              총지급액: <strong>{formatWonWithUnit(totalPaid)}</strong>
             </div>
             <div>
               부족 학생:{" "}
@@ -326,7 +324,7 @@ export default async function ProfessorsPage({
             <div>
               부족금액 합계:{" "}
               <strong style={{ color: "#f87171" }}>
-                {money(totalShortage)}
+                {formatWonWithUnit(totalShortage)}
               </strong>
             </div>
           </div>
@@ -423,7 +421,7 @@ export default async function ProfessorsPage({
                   ) : (
                     <>
                       <td className="table-cell table-cell-nowrap table-cell-wide">
-                        {money(row.totalPaid)}
+                        {formatWonWithUnit(row.totalPaid)}
                       </td>
                       <td
                         className="table-cell table-cell-nowrap table-cell-wide"
@@ -435,7 +433,7 @@ export default async function ProfessorsPage({
                         className="table-cell table-cell-nowrap table-cell-wide"
                         style={{ color: "#f87171" }}
                       >
-                        {money(row.totalShortage)}
+                        {formatWonWithUnit(row.totalShortage)}
                       </td>
                     </>
                   )}
