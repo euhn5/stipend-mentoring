@@ -1,3 +1,4 @@
+import { normalizeYm } from "@/domain/month";
 import { redirect } from "next/navigation";
 import { getSession } from "@/lib/session";
 import Link from "next/link";
@@ -84,7 +85,7 @@ export default async function RosterPage({
   searchParams: Promise<SearchParams>;
 }) {
   const params = await searchParams;
-  const ym = params.ym || "2026-03";
+  const ym = normalizeYm(params.ym);
 
   const overall =
     params.overall === "O" || params.overall === "X"

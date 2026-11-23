@@ -90,3 +90,21 @@ export function lastDayOf(ym: string): string {
   return `${ym}-${String(lastDay).padStart(2, "0")}`;
 }
 
+/**
+ * 유효한 YYYY-MM 기준월인지 검사한다.
+ */
+export function isValidYm(value: string): boolean {
+  return /^\d{4}-(0[1-9]|1[0-2])$/.test(value);
+}
+
+/**
+ * 잘못된 기준월은 기본 기준월로 대체한다.
+ */
+export function normalizeYm(
+  value: string | undefined,
+  fallback = "2026-03"
+): string {
+  return value !== undefined && isValidYm(value)
+    ? value
+    : fallback;
+}

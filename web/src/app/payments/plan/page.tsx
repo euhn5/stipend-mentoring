@@ -1,4 +1,4 @@
-
+import { normalizeYm } from "@/domain/month";
 import Link from "next/link";
 
 import { getPaymentPlans } from "@/queries/plan";
@@ -27,12 +27,7 @@ export default async function PaymentPlanPage({
 }: Props) {
   const params = await searchParams;
 
-  const ym = /^\d{4}-(0[1-9]|1[0-2])$/.test(
-    params.ym ?? ""
-  )
-    ? params.ym!
-    : "2026-03";
-
+  const ym = normalizeYm(params.ym);
   const allRows = await getPaymentPlans(ym);
 
   const students = [

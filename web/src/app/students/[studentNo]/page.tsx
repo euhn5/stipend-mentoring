@@ -1,3 +1,4 @@
+
 import { maskResearcherNo } from "@/lib/format";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
@@ -5,7 +6,7 @@ import { and, desc, eq, like, or } from "drizzle-orm";
 import { getSession } from "@/lib/session";
 import { db } from "@/db/client";
 import { auditLog } from "@/db/schema";
-import { addMonths } from "@/domain/month";
+import { addMonths, normalizeYm } from "@/domain/month";
 import { getRoster } from "@/queries/roster";
 import { FUND_CODES, getPayments } from "@/queries/payments";
 
@@ -136,7 +137,7 @@ export default async function StudentPage({
   const { studentNo } = await params;
   const query = await searchParams;
 
-  const ym = query.ym || "2026-03";
+  const ym = normalizeYm(query.ym);
 
   const tab: StudentTab =
     query.tab === "history"

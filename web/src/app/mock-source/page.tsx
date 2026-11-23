@@ -1,4 +1,4 @@
-
+import { normalizeYm } from "@/domain/month";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { asc, eq } from "drizzle-orm";
@@ -54,9 +54,7 @@ export default async function MockSourcePage({
   const table =
     params.table === "payment" ? "payment" : "academic";
 
-  const ym = /^\d{4}-(0[1-9]|1[0-2])$/.test(params.ym ?? "")
-    ? params.ym!
-    : "2026-03";
+  const ym = normalizeYm(params.ym);
 
   const academicRows =
     table === "academic"

@@ -6,6 +6,8 @@ import {
   termMonths,
   previousYmKst,
   lastDayOf,
+  isValidYm,
+  normalizeYm,
 } from "@/domain/month";
 
 describe("addMonths", () => {
@@ -85,5 +87,35 @@ describe("lastDayOf", () => {
 
   it("2026년 12월은 31일까지 있다", () => {
     expect(lastDayOf("2026-12")).toBe("2026-12-31");
+  });
+});
+describe("기준월 검증", () => {
+  it("정상적인 기준월을 허용한다", () => {
+    expect(isValidYm("2026-03")).toBe(true);
+    expect(isValidYm("2026-12")).toBe(true);
+  });
+
+  it("잘못된 기준월을 거부한다", () => {
+    expect(isValidYm("2026-13")).toBe(false);
+    expect(isValidYm("2026-00")).toBe(false);
+    expect(isValidYm("abc")).toBe(false);
+    expect(isValidYm("")).toBe(false);
+  });
+
+  it("정상적인 기준월을 유지한다", () => {
+    expect(normalizeYm("2026-03")).toBe("2026-03");
+    expect(normalizeYm("2026-12")).toBe("2026-12");
+  });
+
+  it("잘못된 기준월을 기본값으로 대체한다", () => {
+    expect(normalizeYm("2026-13")).toBe("2026-03");
+    expect(normalizeYm("2026-00")).toBe("2026-03");
+    expect(normalizeYm("abc")).toBe("2026-03");
+    expect(normalizeYm("")).toBe("2026-03");
+    expect(normalizeYm(undefined)).toBe("2026-03");
+  });
+
+  it("지정한 기본값을 사용한다", () => {
+    expect(normalizeYm("2026-13", "2026-11")).toBe("2026-11");
   });
 });

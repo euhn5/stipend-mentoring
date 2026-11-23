@@ -1,4 +1,4 @@
-
+import { normalizeYm } from "@/domain/month";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getSession } from "@/lib/session";
@@ -111,12 +111,7 @@ export default async function HomePage({
         ? "accounts"
         : "roster";
 
-  const ym = /^\d{4}-(0[1-9]|1[0-2])$/.test(
-    params.ym ?? ""
-  )
-    ? params.ym!
-    : "2026-03";
-
+  const ym = normalizeYm(params.ym);
 
   // 로그인 사용자 확인
   const session = await getSession();

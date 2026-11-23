@@ -1,3 +1,4 @@
+import { normalizeYm } from "@/domain/month";
 import { maskResearcherNo } from "@/lib/format";
 import Link from "next/link";
 import { db } from "@/db/client";
@@ -21,7 +22,7 @@ export default async function ProfessorsPage({
   searchParams: Promise<SearchParams>;
 }) {
   const params = await searchParams;
-  const ym = params.ym || "2026-03";
+  const ym = normalizeYm(params.ym);
   const view = params.view === "payments" || params.view === "payment"
     ? "payments"
     : "roster";
