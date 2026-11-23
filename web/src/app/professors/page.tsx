@@ -15,12 +15,6 @@ type SearchParams = {
 const money = (value: number) =>
   `${value.toLocaleString("ko-KR")}원`;
 
-const cellStyle = {
-  padding: 14,
-  borderBottom: "1px solid #334155",
-  whiteSpace: "nowrap" as const,
-};
-
 export default async function ProfessorsPage({
   searchParams,
 }: {
@@ -375,7 +369,7 @@ export default async function ProfessorsPage({
                     ? ["요건 O", "요건 X"]
                     : ["총지급액", "부족 학생", "부족금액"]),
                 ].map((heading) => (
-                  <th key={heading} style={cellStyle}>
+                  <th key={heading} className="table-cell table-cell-nowrap table-cell-wide">
                     {heading}
                   </th>
                 ))}
@@ -385,9 +379,9 @@ export default async function ProfessorsPage({
             <tbody>
               {rows.map((row) => (
                 <tr key={row.profId}>
-                  <td style={cellStyle}>{row.profId}</td>
+                  <td className="table-cell table-cell-nowrap table-cell-wide">{row.profId}</td>
 
-                  <td style={cellStyle}>
+                  <td className="table-cell table-cell-nowrap table-cell-wide">
                     <Link
                       href={
                         view === "roster"
@@ -404,49 +398,41 @@ export default async function ProfessorsPage({
                     </Link>
                   </td>
 
-                  <td style={cellStyle}>
+                  <td className="table-cell table-cell-nowrap table-cell-wide">
                     {maskResearcherNo(row.researcherNo)}
                   </td>
-                  <td style={cellStyle}>{row.dept}</td>
-                  <td style={cellStyle}>{row.studentCount}명</td>
+                  <td className="table-cell table-cell-nowrap table-cell-wide">{row.dept}</td>
+                  <td className="table-cell table-cell-nowrap table-cell-wide">{row.studentCount}명</td>
 
                   {view === "roster" ? (
                     <>
                       <td
-                        style={{
-                          ...cellStyle,
-                          color: "#4ade80",
-                        }}
+                        className="table-cell table-cell-nowrap table-cell-wide"
+                        style={{ color: "#4ade80" }}
                       >
                         {row.eligibleCount}명
                       </td>
                       <td
-                        style={{
-                          ...cellStyle,
-                          color: "#f87171",
-                        }}
+                        className="table-cell table-cell-nowrap table-cell-wide"
+                        style={{ color: "#f87171" }}
                       >
                         {row.ineligibleCount}명
                       </td>
                     </>
                   ) : (
                     <>
-                      <td style={cellStyle}>
+                      <td className="table-cell table-cell-nowrap table-cell-wide">
                         {money(row.totalPaid)}
                       </td>
                       <td
-                        style={{
-                          ...cellStyle,
-                          color: "#f87171",
-                        }}
+                        className="table-cell table-cell-nowrap table-cell-wide"
+                        style={{ color: "#f87171" }}
                       >
                         {row.shortageCount}명
                       </td>
                       <td
-                        style={{
-                          ...cellStyle,
-                          color: "#f87171",
-                        }}
+                        className="table-cell table-cell-nowrap table-cell-wide"
+                        style={{ color: "#f87171" }}
                       >
                         {money(row.totalShortage)}
                       </td>
