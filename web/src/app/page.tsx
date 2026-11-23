@@ -28,10 +28,6 @@ const cardStyle = {
   borderRadius: 12,
 };
 
-const cellStyle = {
-  padding: 12,
-  borderBottom: "1px solid #334155",
-};
 
 function Metric({
   label,
@@ -511,22 +507,22 @@ export default async function HomePage({
               >
                 <thead>
                   <tr>
-                    <th style={cellStyle}>재원</th>
-                    <th style={cellStyle}>지급액</th>
-                    <th style={cellStyle}>비중</th>
+                    <th className="table-cell">재원</th>
+                    <th className="table-cell">지급액</th>
+                    <th className="table-cell">비중</th>
                   </tr>
                 </thead>
 
                 <tbody>
                   {fundTotals.map((row) => (
                     <tr key={row.code}>
-                      <td style={cellStyle}>{row.code}</td>
+                      <td className="table-cell">{row.code}</td>
 
-                      <td style={cellStyle}>
+                      <td className="table-cell">
                         {money(row.amount)}
                       </td>
 
-                      <td style={cellStyle}>
+                      <td className="table-cell">
                         {totalPaid > 0
                           ? `${(
                             (row.amount / totalPaid) *

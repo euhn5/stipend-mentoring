@@ -24,3 +24,29 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+/* 공통 테이블 셀 스타일 */
+.table-cell {
+  padding: 12px;
+  border-bottom: 1px solid #334155;
+}
+
+.table-cell-nowrap {
+  white-space: nowrap;
+}
+
+.table-cell-right {
+  text-align: right;
+}
+
+.table-cell-top {
+  vertical-align: top;
+}
+
+.table-cell-middle {
+  vertical-align: middle;
+}
+
+.table-cell-wide {
+  padding: 14px;
+}

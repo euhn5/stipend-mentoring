@@ -22,12 +22,6 @@ const inputStyle = {
   borderRadius: 8,
 };
 
-const cellStyle = {
-  padding: 12,
-  borderBottom: "1px solid #334155",
-  whiteSpace: "nowrap" as const,
-};
-
 export default async function PaymentPlanPage({
   searchParams,
 }: Props) {
@@ -314,7 +308,7 @@ export default async function PaymentPlanPage({
                   "차이",
                   "저장",
                 ].map((title) => (
-                  <th key={title} style={cellStyle}>
+                  <th key={title} className="table-cell table-cell-nowrap">
                     {title}
                   </th>
                 ))}
@@ -328,11 +322,11 @@ export default async function PaymentPlanPage({
 
                 return (
                   <tr key={row.fundCode}>
-                    <td style={cellStyle}>
+                    <td className="table-cell table-cell-nowrap">
                       <strong>{row.fundCode}</strong>
                     </td>
 
-                    <td style={cellStyle}>
+                    <td className="table-cell table-cell-nowrap">
                       <form
                         id={formId}
                         action={savePaymentPlan}
@@ -373,13 +367,13 @@ export default async function PaymentPlanPage({
                       </form>
                     </td>
 
-                    <td style={cellStyle}>
+                    <td className="table-cell table-cell-nowrap">
                       {formatMoney(row.actualAmount)}
                     </td>
 
                     <td
+                      className="table-cell table-cell-nowrap"
                       style={{
-                        ...cellStyle,
                         color:
                           row.difference === null
                             ? "#94a3b8"
@@ -396,7 +390,7 @@ export default async function PaymentPlanPage({
                         : formatMoney(row.difference)}
                     </td>
 
-                    <td style={cellStyle}>
+                    <td className="table-cell table-cell-nowrap">
                       <button
                         type="submit"
                         form={formId}
