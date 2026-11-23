@@ -157,12 +157,6 @@ export default async function RosterPage({
     minWidth: 120,
   };
 
-  // 테이블 셀 스타일
-  const cellStyle = {
-    padding: "12px",
-    borderBottom: "1px solid #334155",
-    whiteSpace: "nowrap" as const,
-  };
 
   return (
     <main
@@ -484,7 +478,7 @@ export default async function RosterPage({
                 ].map((heading) => (
                   <th
                     key={heading}
-                    style={cellStyle}
+                    className="table-cell table-cell-nowrap"
                   >
                     {heading}
                   </th>
@@ -498,12 +492,12 @@ export default async function RosterPage({
                   key={`${row.baseYm}-${row.studentNo}`}
                 >
                   {/* 학번 */}
-                  <td style={cellStyle}>
+                  <td className="table-cell table-cell-nowrap">
                     {row.studentNo}
                   </td>
 
                   {/* 이름: 클릭 시 학생 상세 페이지 이동 */}
-                  <td style={cellStyle}>
+                  <td className="table-cell table-cell-nowrap">
                     <Link
                       href={`/students/${encodeURIComponent(
                         row.studentNo
@@ -521,65 +515,65 @@ export default async function RosterPage({
                   </td>
 
                   {/* 기본 학적 정보 */}
-                  <td style={cellStyle}>
+                  <td className="table-cell table-cell-nowrap">
                     {row.degree}
                   </td>
 
-                  <td style={cellStyle}>
+                  <td className="table-cell table-cell-nowrap">
                     {row.dept}
                   </td>
 
-                  <td style={cellStyle}>
+                  <td className="table-cell table-cell-nowrap">
                     {row.professorName || "-"}
                   </td>
 
-                  <td style={cellStyle}>
+                  <td className="table-cell table-cell-nowrap">
                     {row.acadStatus}
                   </td>
 
                   {/* 지원요건 R1~R4 */}
-                  <td style={cellStyle}>
+                  <td className="table-cell table-cell-nowrap">
                     <Status value={row.r1Status} />
                   </td>
 
-                  <td style={cellStyle}>
+                  <td className="table-cell table-cell-nowrap">
                     <Status value={row.r2Fulltime} />
                   </td>
 
-                  <td style={cellStyle}>
+                  <td className="table-cell table-cell-nowrap">
                     <Status value={row.r3Activity} />
                   </td>
 
-                  <td style={cellStyle}>
+                  <td className="table-cell table-cell-nowrap">
                     <Status value={row.r4Period} />
                   </td>
 
                   {/* 종합 지원자격 */}
-                  <td style={cellStyle}>
+                  <td className="table-cell table-cell-nowrap">
                     <Status value={row.overall} />
                   </td>
 
                   {/* 최대 지원기한 */}
-                  <td style={cellStyle}>
+                  <td className="table-cell table-cell-nowrap">
                     {row.maxSupportYm || "-"}
                   </td>
 
                   {/* CHK-01~03 정합성 검사 */}
-                  <td style={cellStyle}>
+                  <td className="table-cell table-cell-nowrap">
                     <CheckCell
                       label="CHK-01"
                       result={row.chk01}
                     />
                   </td>
 
-                  <td style={cellStyle}>
+                  <td className="table-cell table-cell-nowrap">
                     <CheckCell
                       label="CHK-02"
                       result={row.chk02}
                     />
                   </td>
 
-                  <td style={cellStyle}>
+                  <td className="table-cell table-cell-nowrap">
                     <CheckCell
                       label="CHK-03"
                       result={row.chk03}
