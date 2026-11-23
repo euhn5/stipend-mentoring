@@ -29,11 +29,6 @@ const inputStyle = {
   minWidth: 110,
 };
 
-const cellStyle = {
-  padding: 12,
-  borderBottom: "1px solid #334155",
-  whiteSpace: "nowrap" as const,
-};
 
 const buttonStyle = {
   background: "#2563eb",
@@ -244,7 +239,7 @@ export default async function MockSourcePage({
                     "학위",
                     "저장",
                   ].map((heading) => (
-                    <th key={heading} style={cellStyle}>
+                    <th key={heading} className="table-cell table-cell-nowrap">
                       {heading}
                     </th>
                   ))}
@@ -257,23 +252,23 @@ export default async function MockSourcePage({
 
                   return (
                     <tr key={row.srcId}>
-                      <td style={cellStyle}>
+                      <td className="table-cell table-cell-nowrap">
                         {row.srcId}
                       </td>
 
-                      <td style={cellStyle}>
+                      <td className="table-cell table-cell-nowrap">
                         {row.studentNo ?? "-"}
                       </td>
 
-                      <td style={cellStyle}>
+                      <td className="table-cell table-cell-nowrap">
                         {row.name ?? "-"}
                       </td>
 
-                      <td style={cellStyle}>
+                      <td className="table-cell table-cell-nowrap">
                         {row.acadStatus ?? "-"}
                       </td>
 
-                      <td style={cellStyle}>
+                      <td className="table-cell table-cell-nowrap">
                         <input
                           form={formId}
                           name="dept"
@@ -284,7 +279,7 @@ export default async function MockSourcePage({
                         />
                       </td>
 
-                      <td style={cellStyle}>
+                      <td className="table-cell table-cell-nowrap">
                         <input
                           form={formId}
                           name="degree"
@@ -295,7 +290,7 @@ export default async function MockSourcePage({
                         />
                       </td>
 
-                      <td style={cellStyle}>
+                      <td className="table-cell table-cell-nowrap">
                         <form
                           id={formId}
                           action={updateAcademicSource}
@@ -366,7 +361,7 @@ export default async function MockSourcePage({
                     "지급액",
                     "저장",
                   ].map((heading) => (
-                    <th key={heading} style={cellStyle}>
+                    <th key={heading} className="table-cell table-cell-nowrap">
                       {heading}
                     </th>
                   ))}
@@ -379,23 +374,23 @@ export default async function MockSourcePage({
 
                   return (
                     <tr key={row.srcId}>
-                      <td style={cellStyle}>
+                      <td className="table-cell table-cell-nowrap">
                         {row.srcId}
                       </td>
 
-                      <td style={cellStyle}>
+                      <td className="table-cell table-cell-nowrap">
                         {row.studentNo ?? "-"}
                       </td>
 
-                      <td style={cellStyle}>
+                      <td className="table-cell table-cell-nowrap">
                         {row.systemCode ?? "-"}
                       </td>
 
-                      <td style={cellStyle}>
+                      <td className="table-cell table-cell-nowrap">
                         {row.paidDate ?? "-"}
                       </td>
 
-                      <td style={cellStyle}>
+                      <td className="table-cell table-cell-nowrap">
                         <input
                           form={formId}
                           name="fundCode"
@@ -406,7 +401,7 @@ export default async function MockSourcePage({
                         />
                       </td>
 
-                      <td style={cellStyle}>
+                      <td className="table-cell table-cell-nowrap">
                         <input
                           form={formId}
                           name="amount"
@@ -420,7 +415,7 @@ export default async function MockSourcePage({
                         />
                       </td>
 
-                      <td style={cellStyle}>
+                      <td className="table-cell table-cell-nowrap">
                         <form
                           id={formId}
                           action={updatePaymentSource}

@@ -22,11 +22,6 @@ const inputStyle = {
   width: "100%",
 };
 
-const cellStyle = {
-  padding: 14,
-  borderBottom: "1px solid #334155",
-  verticalAlign: "middle" as const,
-};
 
 function getCategory(key: string): string {
   if (key.startsWith("eligible.")) {
@@ -86,19 +81,19 @@ function CodeTable({
         >
           <thead style={{ background: "#1e293b" }}>
             <tr>
-              <th style={cellStyle}>코드</th>
-              <th style={cellStyle}>설명</th>
+              <th className="table-cell table-cell-middle table-cell-wide">코드</th>
+              <th className="table-cell table-cell-middle table-cell-wide">설명</th>
             </tr>
           </thead>
 
           <tbody>
             {items.map((item) => (
               <tr key={item.code}>
-                <td style={cellStyle}>
+                <td className="table-cell table-cell-middle table-cell-wide">
                   <strong>{item.code}</strong>
                 </td>
 
-                <td style={cellStyle}>
+                <td className="table-cell table-cell-middle table-cell-wide">
                   {item.description}
                 </td>
               </tr>
@@ -279,16 +274,16 @@ export default async function SettingsPage() {
                     }}
                   >
                     <tr>
-                      <th style={cellStyle}>
+                      <th className="table-cell table-cell-middle table-cell-wide">
                         설정 키
                       </th>
-                      <th style={cellStyle}>
+                      <th className="table-cell table-cell-middle table-cell-wide">
                         설명
                       </th>
-                      <th style={cellStyle}>
+                      <th className="table-cell table-cell-middle table-cell-wide">
                         설정값
                       </th>
-                      <th style={cellStyle}>
+                      <th className="table-cell table-cell-middle table-cell-wide">
                         저장
                       </th>
                     </tr>
@@ -301,15 +296,15 @@ export default async function SettingsPage() {
 
                       return (
                         <tr key={rule.key}>
-                          <td style={cellStyle}>
+                          <td className="table-cell table-cell-middle table-cell-wide">
                             <code>{rule.key}</code>
                           </td>
 
-                          <td style={cellStyle}>
+                          <td className="table-cell table-cell-middle table-cell-wide">
                             {rule.description}
                           </td>
 
-                          <td style={cellStyle}>
+                          <td className="table-cell table-cell-middle table-cell-wide">
                             <form
                               id={formId}
                               action={saveRuleConfig}
@@ -331,7 +326,7 @@ export default async function SettingsPage() {
                             </form>
                           </td>
 
-                          <td style={cellStyle}>
+                          <td className="table-cell table-cell-middle table-cell-wide">
                             <button
                               form={formId}
                               type="submit"
