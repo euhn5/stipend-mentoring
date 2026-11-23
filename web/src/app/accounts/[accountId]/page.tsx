@@ -24,25 +24,9 @@ type Props = {
 const money = (n: number) =>
   n.toLocaleString("ko-KR") + "원";
 
-const thStyle = {
-  padding: 12,
-  whiteSpace: "nowrap" as const,
-  borderBottom: "1px solid #475569",
-};
 
-const tdStyle = {
-  padding: 12,
-  whiteSpace: "nowrap" as const,
-  borderBottom: "1px solid #334155",
-};
 
-const inputStyle = {
-  padding: 10,
-  background: "#0f172a",
-  color: "#f8fafc",
-  border: "1px solid #475569",
-  borderRadius: 6,
-};
+
 
 function CheckStatus({
   label,
@@ -151,12 +135,6 @@ export default async function AccountPage({
       r.sourceItem === selectedSource
   );
 
-  const sectionStyle = {
-    marginTop: 24,
-    padding: 24,
-    background: "#1e293b",
-    borderRadius: 10,
-  };
 
   return (
     <main
@@ -209,7 +187,7 @@ export default async function AccountPage({
               name="from"
               defaultValue={from}
               required
-              style={inputStyle}
+              className="account-ledger-input"
             />
           </label>
 
@@ -222,7 +200,7 @@ export default async function AccountPage({
               name="to"
               defaultValue={to}
               required
-              style={inputStyle}
+              className="account-ledger-input"
             />
           </label>
 
@@ -233,7 +211,7 @@ export default async function AccountPage({
             <select
               name="source"
               defaultValue={selectedSource}
-              style={inputStyle}
+              className="account-ledger-input"
             >
               <option value="">전체</option>
               {sources.map((source) => (
@@ -251,7 +229,7 @@ export default async function AccountPage({
             <select
               name="sort"
               defaultValue={descending ? "desc" : "asc"}
-              style={inputStyle}
+              className="account-ledger-input"
             >
               <option value="asc">오름차순</option>
               <option value="desc">내림차순</option>
@@ -289,7 +267,7 @@ export default async function AccountPage({
       </section>
 
       {/* 전체 요약 */}
-      <section style={sectionStyle}>
+      <section className="account-ledger-section">
         <h2 style={{ fontSize: 20, marginBottom: 16 }}>
           기관계정 요약
         </h2>
@@ -366,7 +344,7 @@ export default async function AccountPage({
                   "CHK-06",
                   "CHK-07",
                 ].map((heading) => (
-                  <th key={heading} style={thStyle}>
+                  <th key={heading} className="account-ledger-th">
                     {heading}
                   </th>
                 ))}
@@ -375,17 +353,17 @@ export default async function AccountPage({
             <tbody>
               {summary.sources.map((row) => (
                 <tr key={row.sourceItem}>
-                  <td style={tdStyle}>{row.sourceItem}</td>
-                  <td style={tdStyle}>{money(row.inTotal)}</td>
-                  <td style={tdStyle}>{money(row.outTotal)}</td>
-                  <td style={tdStyle}>{money(row.balance)}</td>
-                  <td style={tdStyle}>
+                  <td className="account-ledger-td">{row.sourceItem}</td>
+                  <td className="account-ledger-td">{money(row.inTotal)}</td>
+                  <td className="account-ledger-td">{money(row.outTotal)}</td>
+                  <td className="account-ledger-td">{money(row.balance)}</td>
+                  <td className="account-ledger-td">
                     <CheckStatus
                       label="CHK-06"
                       result={row.chk06}
                     />
                   </td>
-                  <td style={tdStyle}>
+                  <td className="account-ledger-td">
                     <CheckStatus
                       label="CHK-07"
                       result={row.chk07}
@@ -429,7 +407,7 @@ export default async function AccountPage({
                   "출처별 누적잔액",
                   "적요",
                 ].map((heading) => (
-                  <th key={heading} style={thStyle}>
+                  <th key={heading} className="account-ledger-th">
                     {heading}
                   </th>
                 ))}
@@ -443,49 +421,43 @@ export default async function AccountPage({
                   key={`opening-${row.sourceItem}`}
                   style={{ background: "#172033" }}
                 >
-                  <td style={tdStyle}>{from} 이전</td>
-                  <td style={tdStyle}>기초잔액</td>
-                  <td style={tdStyle}>-</td>
-                  <td style={tdStyle}>{row.sourceItem}</td>
-                  <td style={tdStyle}>-</td>
-                  <td style={tdStyle}>-</td>
-                  <td style={{ ...tdStyle, fontWeight: 700 }}>
+                  <td className="account-ledger-td">{from} 이전</td>
+                  <td className="account-ledger-td">기초잔액</td>
+                  <td className="account-ledger-td">-</td>
+                  <td className="account-ledger-td">{row.sourceItem}</td>
+                  <td className="account-ledger-td">-</td>
+                  <td className="account-ledger-td">-</td>
+                  <td className="account-ledger-td account-ledger-td-bold">
                     {money(row.balance)}
                   </td>
-                  <td style={tdStyle}>조회 시작일 전 누적</td>
+                  <td className="account-ledger-td">조회 시작일 전 누적</td>
                 </tr>
               ))}
 
               {visibleLedger.map((row) => (
                 <tr key={row.txnId}>
-                  <td style={tdStyle}>{row.txnDate}</td>
+                  <td className="account-ledger-td">{row.txnDate}</td>
                   <td
-                    style={{
-                      ...tdStyle,
-                      color:
-                        row.direction === "IN"
-                          ? "#4ade80"
-                          : "#f87171",
-                    }}
+                    className={`account-ledger-td ${row.direction === "IN" ? "account-ledger-income" : "account-ledger-expense"}`}
                   >
                     {row.direction === "IN" ? "수입" : "지급"}
                   </td>
-                  <td style={tdStyle}>{row.itemCode}</td>
-                  <td style={tdStyle}>{row.sourceItem}</td>
-                  <td style={tdStyle}>
+                  <td className="account-ledger-td">{row.itemCode}</td>
+                  <td className="account-ledger-td">{row.sourceItem}</td>
+                  <td className="account-ledger-td">
                     {row.direction === "IN"
                       ? money(row.amount)
                       : "-"}
                   </td>
-                  <td style={tdStyle}>
+                  <td className="account-ledger-td">
                     {row.direction === "OUT"
                       ? money(row.amount)
                       : "-"}
                   </td>
-                  <td style={{ ...tdStyle, fontWeight: 700 }}>
+                  <td className="account-ledger-td account-ledger-td-bold">
                     {money(row.balance)}
                   </td>
-                  <td style={tdStyle}>{row.memo ?? "-"}</td>
+                  <td className="account-ledger-td">{row.memo ?? "-"}</td>
                 </tr>
               ))}
 

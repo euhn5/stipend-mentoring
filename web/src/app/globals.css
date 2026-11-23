@@ -68,3 +68,46 @@ body {
   padding: 12px 0;
   border-bottom: 1px solid #334155;
 }
+
+/* 기관계정 상세 페이지 */
+.account-ledger-th {
+  padding: 12px;
+  white-space: nowrap;
+  border-bottom: 1px solid #475569;
+}
+
+.account-ledger-td {
+  padding: 12px;
+  white-space: nowrap;
+  border-bottom: 1px solid #334155;
+}
+
+.account-ledger-input {
+  padding: 10px;
+  background: #0f172a;
+  color: #f8fafc;
+  border: 1px solid #475569;
+  border-radius: 6px;
+}
+
+.account-ledger-section {
+  margin-top: 24px;
+  padding: 24px;
+  background: #1e293b;
+  border-radius: 10px;
+}
+
+
+/* 기관계정 원장 잔액 강조 */
+.account-ledger-td-bold {
+  font-weight: 700;
+}
+
+/* 수입·지급 구분 색상 */
+.account-ledger-income {
+  color: #4ade80;
+}
+
+.account-ledger-expense {
+  color: #f87171;
+}
