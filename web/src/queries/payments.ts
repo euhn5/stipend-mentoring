@@ -133,18 +133,20 @@ export async function getPayments(
     )
     .groupBy(payment.studentNo);
 
+
   // 4. 원천 지급 데이터 조회
   const sourceRows = await db
-  .select()
-  .from(srcPayment)
-  .where(
-    and(
-      eq(srcPayment.baseYm, ym),
-      filter.studentNo
-        ? eq(srcPayment.studentNo, filter.studentNo)
-        : undefined
-    )
-  );
+    .select()
+    .from(srcPayment)
+    .where(
+      and(
+        eq(srcPayment.baseYm, ym),
+        filter.studentNo
+          ? eq(srcPayment.studentNo, filter.studentNo)
+          : undefined
+      )
+    );
+
 
   // 5. 재원별 금액을 Map에 정리
   const fundMap = new Map<string, number>();
@@ -203,7 +205,7 @@ export async function getPayments(
     codes.add(row.fundCode);
     fundCodesMap.set(row.studentNo, codes);
   }
-    const rows: PaymentRow[] = [];
+  const rows: PaymentRow[] = [];
 
   // 8. 학생별 지급내역 생성
   for (const student of students) {

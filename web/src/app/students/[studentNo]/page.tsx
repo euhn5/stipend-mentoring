@@ -151,7 +151,7 @@ export default async function StudentPage({
           ? "requirements"
           : "info";
 
-  // 학생 기본 정보 조회
+
 
   // 로그인 사용자 확인
   const session = await getSession();
@@ -177,7 +177,6 @@ export default async function StudentPage({
     notFound();
   }
 
-  // 기준월부터 6개월 생성
 
 
   // 기준월부터 6개월 생성
@@ -186,16 +185,18 @@ export default async function StudentPage({
     (_, index) => addMonths(ym, index)
   );
 
+
   // 지급 탭에서만 월별 지급내역 조회
   const paymentHistory =
-  tab === "payments"
-    ? await Promise.all(
-        paymentMonths.map(async (month) => ({
-          ym: month,
-          payment: await getPaymentByStudentNo(month, studentNo),
-        }))
-      )
-    : [];
+    tab === "payments"
+      ? await Promise.all(
+          paymentMonths.map(async (month) => ({
+            ym: month,
+            payment: await getPaymentByStudentNo(month, studentNo),
+          }))
+        )
+      : [];
+
 
   const payment = paymentHistory[0]?.payment ?? null;
 
